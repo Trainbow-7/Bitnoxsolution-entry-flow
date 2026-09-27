@@ -10,8 +10,8 @@
     "tunnel": "node tunnel.mjs",
     "start:backend": "cd backend && node dist/server.js",
     "seed": "cd backend && npm run prisma:seed",
-    "build": "cd frontend && npm run build",
-    "build:frontend": "cd frontend && npm run build",
+    "build": "cd frontend && npm install && npm run build",
+    "build:frontend": "cd frontend && npm install && npm run build",
     "build:backend": "cd backend && npm run build",
     "postinstall": "cd backend && npx prisma generate"
   },
