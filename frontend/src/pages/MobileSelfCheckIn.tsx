@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { Department, ExpectedDuration, PurposeOfVisit, Staff } from '../types';
+import { broadcastCloudEvent } from '../utils/cloudSync';
 import {
   Buildings,
   Sparkle,
@@ -139,6 +140,16 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
       });
 
       setConfirmedData(res.visitor);
+
+      // Broadcast immediately to front-desk terminal across all cloud/local networks
+      if (res.visitor) {
+        broadcastCloudEvent({
+          type: 'NEW_VISITOR',
+          visitor: res.visitor,
+          timestamp: new Date().toISOString(),
+        }).catch(() => {});
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       setSubmitError(err.message || 'Check-in failed. Please verify your details or ask reception.');

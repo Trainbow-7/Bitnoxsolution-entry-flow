@@ -16,6 +16,7 @@ import { Settings } from './pages/Settings';
 import { MobileSelfCheckIn } from './pages/MobileSelfCheckIn';
 import { OverstayAlertModal } from './components/OverstayAlertModal';
 import { playCheckInChime, playOverdueAlertSound } from './utils/audioChime';
+import { subscribeCloudEvents } from './utils/cloudSync';
 import { api } from './api/client';
 import { UserRole, OverstayAlertData } from './types';
 import { ShieldWarning } from '@phosphor-icons/react';
@@ -278,74 +279,78 @@ const MainApp: React.FC = () => {
     };
   }, [user, isAdmin, isReceptionist]);
 
-  // Real-time SSE stream listener & Window/Storage events for multi-tab check-in sync
+  // Real-time SSE stream listener, Cloud Relay Bridge & Window/Storage events for multi-tab/device sync
   useEffect(() => {
     if (!user || (!isAdmin && !isReceptionist)) return;
 
-    // 1. Server-Sent Events stream
+    const handleIncomingVisitor = (visitor: any) => {
+      if (!visitor) return;
+      if (knownVisitorIdsRef.current) {
+        knownVisitorIdsRef.current.add(visitor.id);
+      }
+      playCheckInChime();
+      setLiveCount((c) => c + 1);
+    };
+
+    const handleIncomingOverstay = (data: any) => {
+      if (!data || !data.visitor) return;
+      if (dismissedOverstayIdsRef.current.has(data.visitor.id)) return;
+
+      if (!alertedOverstayIdsRef.current.has(data.visitor.id)) {
+        alertedOverstayIdsRef.current.add(data.visitor.id);
+        playOverdueAlertSound();
+      }
+
+      setOverstayAlerts((prev) => {
+        const exists = prev.some((a) => a.visitor.id === data.visitor.id);
+        if (exists) {
+          return prev.map((a) => (a.visitor.id === data.visitor.id ? data : a));
+        }
+        return [data, ...prev];
+      });
+    };
+
+    // 1. Universal Cloud Relay (connects mobile phones worldwide directly)
+    const unsubCloud = subscribeCloudEvents((payload) => {
+      if (payload.type === 'NEW_VISITOR' && payload.visitor) {
+        handleIncomingVisitor(payload.visitor);
+      } else if (payload.type === 'OVERSTAY_ALERT') {
+        handleIncomingOverstay(payload);
+      }
+    });
+
+    // 2. Server-Sent Events stream
     const es = api.checkinSessions.createEventSource();
 
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-
-        // Live Visitor Arrival Chime (from QR self-checkin kiosk or manual terminal)
         if (data.type === 'NEW_VISITOR' && data.visitor) {
-          if (knownVisitorIdsRef.current) {
-            knownVisitorIdsRef.current.add(data.visitor.id);
-          }
-          playCheckInChime();
-          setLiveCount((c) => c + 1);
-        }
-
-        // Overstay / Overdue Visitor Alert Sound
-        if (data.type === 'OVERSTAY_ALERT' && data.visitor) {
-          if (dismissedOverstayIdsRef.current.has(data.visitor.id)) {
-            return;
-          }
-
-          if (!alertedOverstayIdsRef.current.has(data.visitor.id)) {
-            alertedOverstayIdsRef.current.add(data.visitor.id);
-            playOverdueAlertSound();
-          }
-
-          setOverstayAlerts((prev) => {
-            const exists = prev.some((a) => a.visitor.id === data.visitor.id);
-            if (exists) {
-              return prev.map((a) => (a.visitor.id === data.visitor.id ? data : a));
-            }
-            return [data, ...prev];
-          });
+          handleIncomingVisitor(data.visitor);
+        } else if (data.type === 'OVERSTAY_ALERT' && data.visitor) {
+          handleIncomingOverstay(data);
         }
       } catch (err) {
         console.error('Error handling SSE event in MainApp:', err);
       }
     };
 
-    // 2. Custom Window Event listener (instant trigger within same window)
+    // 3. Custom Window Event listener (instant trigger within same window)
     const handleCustomNewVisitor = (e: any) => {
       const visitor = e.detail?.visitor;
       if (visitor) {
-        if (knownVisitorIdsRef.current) {
-          knownVisitorIdsRef.current.add(visitor.id);
-        }
-        playCheckInChime();
-        setLiveCount((c) => c + 1);
+        handleIncomingVisitor(visitor);
       }
     };
     window.addEventListener('bitnox_new_visitor', handleCustomNewVisitor);
 
-    // 3. Storage Event listener (instant cross-tab sync when another tab checks in)
+    // 4. Storage Event listener (instant cross-tab sync when another tab checks in)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'bitnox_last_visitor' && e.newValue) {
         try {
           const vis = JSON.parse(e.newValue);
           if (vis && vis.id) {
-            if (knownVisitorIdsRef.current && !knownVisitorIdsRef.current.has(vis.id)) {
-              knownVisitorIdsRef.current.add(vis.id);
-              playCheckInChime();
-              setLiveCount((c) => c + 1);
-            }
+            handleIncomingVisitor(vis);
           }
         } catch {}
       }
@@ -353,6 +358,7 @@ const MainApp: React.FC = () => {
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
+      unsubCloud();
       es.close();
       window.removeEventListener('bitnox_new_visitor', handleCustomNewVisitor);
       window.removeEventListener('storage', handleStorageChange);

@@ -8,6 +8,7 @@ import {
   setAudioEnabled,
   subscribeAudioState,
 } from '../utils/audioChime';
+import { subscribeCloudEvents, broadcastCloudEvent } from '../utils/cloudSync';
 import {
   Buildings,
   Sparkle,
@@ -190,9 +191,41 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
     return () => clearInterval(timer);
   }, [checkInMode]);
 
-  // 4. Real-time SSE Stream & Polling fallback for live self-checkin events
+  // 4. Real-time SSE Stream, Cloud Relay Bridge & Polling for live self-checkin events
   useEffect(() => {
-    // Open Server-Sent Events stream
+    // Process new visitor arrival
+    const handleNewArrival = (newVis: Visitor) => {
+      // Sound alert chime
+      if (soundEnabled) {
+        playCheckInChime();
+      }
+
+      // Highlight newly arrived visitor
+      setHighlightedVisitorId(newVis.id);
+      setTimeout(() => {
+        setHighlightedVisitorId(null);
+      }, 8000);
+
+      // Prepend to recent list
+      setRecentSelfCheckins((prev) => [
+        newVis,
+        ...prev.filter((v) => v.id !== newVis.id),
+      ].slice(0, 10));
+
+      // Increment on-premise counter if callback provided
+      if (onSuccessCheckIn) {
+        onSuccessCheckIn(newVis);
+      }
+    };
+
+    // 1. Subscribe to Universal Cloud Relay (connects mobile phones worldwide)
+    const unsubCloud = subscribeCloudEvents((payload) => {
+      if (payload.type === 'NEW_VISITOR' && payload.visitor) {
+        handleNewArrival(payload.visitor);
+      }
+    });
+
+    // 2. Open Local Server-Sent Events stream
     const es = api.checkinSessions.createEventSource();
     eventSourceRef.current = es;
 
@@ -200,29 +233,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'NEW_VISITOR' && data.visitor) {
-          const newVis: Visitor = data.visitor;
-
-          // Sound alert chime
-          if (soundEnabled) {
-            playCheckInChime();
-          }
-
-          // Highlight newly arrived visitor
-          setHighlightedVisitorId(newVis.id);
-          setTimeout(() => {
-            setHighlightedVisitorId(null);
-          }, 8000);
-
-          // Prepend to recent list
-          setRecentSelfCheckins((prev) => [
-            newVis,
-            ...prev.filter((v) => v.id !== newVis.id),
-          ].slice(0, 10));
-
-          // Increment on-premise counter if callback provided
-          if (onSuccessCheckIn) {
-            onSuccessCheckIn(newVis);
-          }
+          handleNewArrival(data.visitor);
         }
       } catch (err) {
         console.error('Error handling SSE event:', err);
@@ -233,14 +244,15 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       // Browser will auto-reconnect SSE in background
     };
 
-    // Fallback polling every 4 seconds to ensure 100% sync
+    // 3. Fallback polling every 3.5 seconds to ensure 100% sync
     const pollInterval = setInterval(() => {
       if (checkInMode === 'qr') {
         fetchRecentSelfCheckins();
       }
-    }, 4000);
+    }, 3500);
 
     return () => {
+      unsubCloud();
       es.close();
       eventSourceRef.current = null;
       clearInterval(pollInterval);

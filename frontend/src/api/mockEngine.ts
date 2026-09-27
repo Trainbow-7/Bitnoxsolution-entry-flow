@@ -11,6 +11,7 @@ import {
   SelfCheckInPayload,
   OverstayAlertData,
 } from '../types';
+import { broadcastCloudEvent } from '../utils/cloudSync';
 
 const INITIAL_STAFF: Staff[] = [
   {
@@ -509,10 +510,11 @@ export const mockApi = {
       storage.setVisitors(visitors);
       storage.addAuditLog('check_in', newVisitor.id, { full_name: newVisitor.full_name });
 
-      // Dispatch real-time events for instant audio chime in same & other windows
+      // Dispatch real-time events for instant audio chime in same & other windows & cloud relay
       try {
         window.dispatchEvent(new CustomEvent('bitnox_new_visitor', { detail: { visitor: newVisitor } }));
         localStorage.setItem('bitnox_last_visitor', JSON.stringify(newVisitor));
+        broadcastCloudEvent({ type: 'NEW_VISITOR', visitor: newVisitor }).catch(() => {});
       } catch {}
 
       return newVisitor;
