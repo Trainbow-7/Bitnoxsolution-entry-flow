@@ -508,6 +508,13 @@ export const mockApi = {
       visitors.unshift(newVisitor);
       storage.setVisitors(visitors);
       storage.addAuditLog('check_in', newVisitor.id, { full_name: newVisitor.full_name });
+
+      // Dispatch real-time events for instant audio chime in same & other windows
+      try {
+        window.dispatchEvent(new CustomEvent('bitnox_new_visitor', { detail: { visitor: newVisitor } }));
+        localStorage.setItem('bitnox_last_visitor', JSON.stringify(newVisitor));
+      } catch {}
+
       return newVisitor;
     },
 
@@ -572,17 +579,17 @@ export const mockApi = {
       for (const v of active) {
         const elapsed = Math.round((now - new Date(v.arrival_datetime).getTime()) / 60000);
         let limit = 60;
-        if (v.expected_duration === '<15 min') limit = 20;
-        else if (v.expected_duration === '15-30 min') limit = 35;
+        if (v.expected_duration === '<15 min') limit = 15;
+        else if (v.expected_duration === '15-30 min') limit = 30;
         else if (v.expected_duration === '30-60 min') limit = 60;
-        else if (v.expected_duration === '1hr+') limit = 90;
+        else if (v.expected_duration === '1hr+') limit = 60;
 
-        if (elapsed > limit) {
+        if (elapsed >= limit) {
           alerts.push({
             visitor: v,
             elapsed_minutes: elapsed,
             threshold_minutes: limit,
-            overdue_minutes: elapsed - limit,
+            overdue_minutes: Math.max(1, elapsed - limit),
             alerted_at: new Date().toISOString(),
           });
         }

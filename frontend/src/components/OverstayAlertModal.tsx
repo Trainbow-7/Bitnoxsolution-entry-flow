@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { OverstayAlertData } from '../types';
+import { playOverdueAlertSound } from '../utils/audioChime';
 import {
   Warning,
   Clock,
@@ -29,6 +30,12 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (alerts && alerts.length > 0) {
+      playOverdueAlertSound();
+    }
+  }, [alerts.length]);
 
   if (!alerts || alerts.length === 0) {
     return null;

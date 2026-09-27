@@ -196,78 +196,118 @@ const MainApp: React.FC = () => {
     };
   }, [role, navigateTab]);
 
-  // Periodically fetch live count for sidebar badge based on role
-  useEffect(() => {
-    if (!user || !role) return;
+  // Tracking sets for real-time arrival and overstay sound triggers
+  const knownVisitorIdsRef = useRef<Set<string> | null>(null);
+  const alertedOverstayIdsRef = useRef<Set<string>>(new Set());
 
-    const updateCount = () => {
-      if (isAdmin || isReceptionist) {
-        api.visitors
-          .getCurrentlyInOffice()
-          .then((visitors) => setLiveCount(visitors.length))
-          .catch(() => {});
-      } else if (isStaff) {
-        api.visitors
-          .getMyVisitors({ status: 'In Progress' })
-          .then((res) => setLiveCount(res.total))
-          .catch(() => {});
+  // Real-time visitor polling & arrival chime detector (runs for Receptionist & Admin)
+  useEffect(() => {
+    if (!user || (!isAdmin && !isReceptionist)) return;
+
+    let isSubscribed = true;
+
+    const syncLiveVisitors = async () => {
+      try {
+        const visitors = await api.visitors.getCurrentlyInOffice();
+        if (!isSubscribed) return;
+
+        setLiveCount(visitors.length);
+
+        if (knownVisitorIdsRef.current === null) {
+          // Initial mount: record existing visitor IDs without chiming
+          knownVisitorIdsRef.current = new Set(visitors.map((v) => v.id));
+        } else {
+          // Subsequent checks: detect newly checked-in visitors
+          const newVisitors = visitors.filter((v) => !knownVisitorIdsRef.current!.has(v.id));
+          if (newVisitors.length > 0) {
+            newVisitors.forEach((v) => knownVisitorIdsRef.current!.add(v.id));
+            playCheckInChime();
+          }
+        }
+      } catch (err) {
+        // Silently retry on next poll cycle
       }
     };
 
-    updateCount();
-    const interval = setInterval(updateCount, 15000);
-    return () => clearInterval(interval);
-  }, [user, role, isAdmin, isReceptionist, isStaff]);
+    syncLiveVisitors();
+    const interval = setInterval(syncLiveVisitors, 3500);
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
+  }, [user, isAdmin, isReceptionist]);
 
-  // Overstay alerts - Receptionist and Admin only
+  // Real-time Overstay Alerts detector & audio chime (Receptionist & Admin only)
   useEffect(() => {
     if (!user || (!isAdmin && !isReceptionist)) return;
 
-    const syncOverstayAlerts = () => {
-      api.visitors
-        .getOverstayAlerts()
-        .then((data) => {
-          const unDismissed = data.filter((item) => !dismissedOverstayIdsRef.current.has(item.visitor.id));
-          setOverstayAlerts((prev) => {
-            const prevIds = new Set(prev.map((a) => a.visitor.id));
-            const hasNewAlerts = unDismissed.some((a) => !prevIds.has(a.visitor.id));
-            if (hasNewAlerts && prev.length > 0) {
-              playOverdueAlertSound();
-            }
-            return unDismissed;
-          });
-        })
-        .catch((err) => console.error('Failed to load overstay alerts:', err));
+    let isSubscribed = true;
+
+    const syncOverstayAlerts = async () => {
+      try {
+        const alerts = await api.visitors.getOverstayAlerts();
+        if (!isSubscribed) return;
+
+        const unDismissed = alerts.filter(
+          (item) => !dismissedOverstayIdsRef.current.has(item.visitor.id)
+        );
+
+        if (unDismissed.length > 0) {
+          // Check if any overdue visitor has not been alerted with audio yet
+          const unAlerted = unDismissed.filter(
+            (item) => !alertedOverstayIdsRef.current.has(item.visitor.id)
+          );
+
+          if (unAlerted.length > 0) {
+            unAlerted.forEach((item) => alertedOverstayIdsRef.current.add(item.visitor.id));
+            playOverdueAlertSound();
+          }
+        }
+
+        setOverstayAlerts(unDismissed);
+      } catch (err) {
+        console.error('Failed to sync overstay alerts in MainApp:', err);
+      }
     };
 
     syncOverstayAlerts();
-    const interval = setInterval(syncOverstayAlerts, 20000);
-    return () => clearInterval(interval);
+    const interval = setInterval(syncOverstayAlerts, 4000);
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
   }, [user, isAdmin, isReceptionist]);
 
-  // Real-time SSE listener for NEW_VISITOR & OVERSTAY_ALERT events - Receptionist and Admin only
+  // Real-time SSE stream listener & Window/Storage events for multi-tab check-in sync
   useEffect(() => {
     if (!user || (!isAdmin && !isReceptionist)) return;
 
+    // 1. Server-Sent Events stream
     const es = api.checkinSessions.createEventSource();
 
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
 
-        // 1. Live Visitor Arrival Chime (from QR self-checkin kiosk or manual terminal)
+        // Live Visitor Arrival Chime (from QR self-checkin kiosk or manual terminal)
         if (data.type === 'NEW_VISITOR' && data.visitor) {
+          if (knownVisitorIdsRef.current) {
+            knownVisitorIdsRef.current.add(data.visitor.id);
+          }
           playCheckInChime();
           setLiveCount((c) => c + 1);
         }
 
-        // 2. Overstay / Overdue Visitor Alert Sound
+        // Overstay / Overdue Visitor Alert Sound
         if (data.type === 'OVERSTAY_ALERT' && data.visitor) {
           if (dismissedOverstayIdsRef.current.has(data.visitor.id)) {
             return;
           }
 
-          playOverdueAlertSound();
+          if (!alertedOverstayIdsRef.current.has(data.visitor.id)) {
+            alertedOverstayIdsRef.current.add(data.visitor.id);
+            playOverdueAlertSound();
+          }
 
           setOverstayAlerts((prev) => {
             const exists = prev.some((a) => a.visitor.id === data.visitor.id);
@@ -282,8 +322,40 @@ const MainApp: React.FC = () => {
       }
     };
 
+    // 2. Custom Window Event listener (instant trigger within same window)
+    const handleCustomNewVisitor = (e: any) => {
+      const visitor = e.detail?.visitor;
+      if (visitor) {
+        if (knownVisitorIdsRef.current) {
+          knownVisitorIdsRef.current.add(visitor.id);
+        }
+        playCheckInChime();
+        setLiveCount((c) => c + 1);
+      }
+    };
+    window.addEventListener('bitnox_new_visitor', handleCustomNewVisitor);
+
+    // 3. Storage Event listener (instant cross-tab sync when another tab checks in)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'bitnox_last_visitor' && e.newValue) {
+        try {
+          const vis = JSON.parse(e.newValue);
+          if (vis && vis.id) {
+            if (knownVisitorIdsRef.current && !knownVisitorIdsRef.current.has(vis.id)) {
+              knownVisitorIdsRef.current.add(vis.id);
+              playCheckInChime();
+              setLiveCount((c) => c + 1);
+            }
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
     return () => {
       es.close();
+      window.removeEventListener('bitnox_new_visitor', handleCustomNewVisitor);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [user, isAdmin, isReceptionist]);
 
