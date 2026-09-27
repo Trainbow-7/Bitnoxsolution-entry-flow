@@ -8,7 +8,7 @@ import {
   getNetworkInfo,
   setTunnelUrl,
 } from '../controllers/checkinSessionController.js';
-import { requireAuth, requireRole } from '../middleware/auth.js';
+import { optionalAuth } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -24,8 +24,8 @@ router.get('/network-info', getNetworkInfo);
 // Register active public tunnel URL (from tunnel process)
 router.post('/tunnel-url', setTunnelUrl);
 
-// Kiosk generation of a new 90-second session token (Receptionist & Admin only)
-router.post('/', requireAuth, requireRole('Receptionist', 'Admin'), createSession);
+// Kiosk generation of a new QR session token (attaches user if logged in, or allows kiosk mode)
+router.post('/', optionalAuth, createSession);
 
 // Public validation of token for visitor phone
 router.get('/:token', getSessionStatus);

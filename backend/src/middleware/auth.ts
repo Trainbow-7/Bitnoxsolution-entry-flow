@@ -46,6 +46,34 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
+export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret) as {
+      id: string;
+      email: string;
+      role: string;
+    };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, name: true, email: true, role: true, linked_staff_id: true },
+    });
+
+    if (user) {
+      req.user = user;
+    }
+  } catch {
+    // Session token invalid/expired; continue unauthenticated without failing
+  }
+  next();
+};
+
 export const requireRole = (...allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -63,3 +91,4 @@ export const requireRole = (...allowedRoles: string[]) => {
     next();
   };
 };
+

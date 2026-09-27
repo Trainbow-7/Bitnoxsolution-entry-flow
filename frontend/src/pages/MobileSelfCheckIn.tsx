@@ -365,7 +365,11 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
             {confirmedData.staff_to_see && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Host / Specialist:</span>
-                <strong style={{ color: 'var(--bitnox-cyan)' }}>{confirmedData.staff_to_see}</strong>
+                <strong style={{ color: 'var(--bitnox-cyan)' }}>
+                  {typeof confirmedData.staff_to_see === 'object'
+                    ? confirmedData.staff_to_see.name
+                    : confirmedData.staff_to_see}
+                </strong>
               </div>
             )}
           </div>

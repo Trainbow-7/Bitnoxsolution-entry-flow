@@ -290,13 +290,14 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
     }
   };
 
+  const isCloudDomain = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
   const effectiveHost = (() => {
     if (customHost.trim()) return customHost.trim();
-    if (networkReachability === 'internet' && publicTunnelUrl) {
+    if (publicTunnelUrl) {
       return publicTunnelUrl.replace(/^https?:\/\//, '');
     }
-    const currentHostname = window.location.hostname;
-    if (currentHostname !== 'localhost' && currentHostname !== '127.0.0.1') {
+    if (isCloudDomain) {
       return window.location.host;
     }
     if (serverLanIp && serverLanIp !== '127.0.0.1' && serverLanIp !== 'localhost') {
@@ -315,10 +316,13 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       return `${proto}${host}/?session=${tokenPart}`;
     }
 
-    // Default: Public Internet URL so visitors on 4G/5G/LTE can scan without needing office Wi-Fi
     if (networkReachability === 'internet' && publicTunnelUrl) {
       const tunnel = publicTunnelUrl.replace(/\/+$/, '');
       return `${tunnel}/?session=${tokenPart}`;
+    }
+
+    if (isCloudDomain) {
+      return `${window.location.origin}/?session=${tokenPart}`;
     }
 
     return `${window.location.protocol}//${effectiveHost}/?session=${tokenPart}`;
