@@ -3,19 +3,19 @@ import { api } from '../api/client';
 import { Visitor, VisitorStatus, Staff } from '../types';
 import { useAuth } from '../context/AuthContext';
 import {
-  IconUserCheck,
-  IconSearch,
-  IconPhone,
-  IconMail,
-  IconBuildingSkyscraper,
-  IconSparkles,
-  IconFileText,
-  IconLayoutDashboard,
-  IconArrowLeft,
-  IconCircleCheck,
-  IconHistory,
-  IconFilter,
-} from '@tabler/icons-react';
+  UserCheck,
+  MagnifyingGlass,
+  Phone,
+  Envelope,
+  Buildings,
+  Sparkle,
+  FileText,
+  SquaresFour,
+  ArrowLeft,
+  CheckCircle,
+  ClockCounterClockwise,
+  Funnel,
+} from '@phosphor-icons/react';
 
 interface MyVisitorsProps {
   onNavigateToDashboard?: () => void;
@@ -124,7 +124,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
             }}
             title="Return to Executive Dashboard"
           >
-            <IconArrowLeft size={15} stroke={1.6} />
+            <ArrowLeft size={15} weight="bold" />
             <span>Executive Dashboard</span>
           </button>
           <span style={{ color: 'var(--text-muted)' }}>/</span>
@@ -139,9 +139,9 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             {isHistoryView ? (
-              <IconHistory size={26} color="var(--bitnox-cyan)" stroke={1.6} />
+              <ClockCounterClockwise size={26} color="var(--bitnox-cyan)" weight="duotone" />
             ) : (
-              <IconUserCheck size={26} color="var(--bitnox-cyan)" stroke={1.6} />
+              <UserCheck size={26} color="var(--bitnox-cyan)" weight="duotone" />
             )}
             <h1 style={{ fontSize: '1.75rem' }}>
               {isAdmin
@@ -173,7 +173,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
               }}
               title="Return to Executive Dashboard"
             >
-              <IconLayoutDashboard size={15} color="var(--bitnox-cyan)" stroke={1.6} />
+              <SquaresFour size={15} color="var(--bitnox-cyan)" weight="duotone" />
               <span>Return to Dashboard</span>
             </button>
           )}
@@ -192,9 +192,9 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
               }}
             >
               {user.linked_staff.department === 'Tech Institute' ? (
-                <IconBuildingSkyscraper size={16} color="var(--bitnox-cyan)" stroke={1.6} />
+                <Buildings size={16} color="var(--bitnox-cyan)" weight="duotone" />
               ) : (
-                <IconSparkles size={16} color="#2dd4bf" stroke={1.6} />
+                <Sparkle size={16} color="#2dd4bf" weight="duotone" />
               )}
               <span>
                 {user.linked_staff.department} • {user.linked_staff.role_title || 'Staff Specialist'}
@@ -208,7 +208,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
       <div className="filter-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', flex: 1, minWidth: '280px' }}>
           <div className="search-input-wrapper" style={{ flex: 1, maxWidth: '360px' }}>
-            <IconSearch size={16} stroke={1.6} />
+            <MagnifyingGlass size={16} weight="bold" />
             <input
               className="form-control"
               placeholder="Search by visitor name, phone, or service..."
@@ -220,7 +220,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
           {/* Admin Staff Filter Selector */}
           {isAdmin && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <IconFilter size={15} color="var(--text-muted)" stroke={1.6} />
+              <Funnel size={15} color="var(--text-muted)" weight="bold" />
               <select
                 className="form-control"
                 style={{ minWidth: '200px' }}
@@ -259,7 +259,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
         </div>
       ) : visitors.length === 0 ? (
         <div className="card" style={{ padding: '3.5rem 2rem', textAlign: 'center' }}>
-          <IconUserCheck size={48} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+          <UserCheck size={48} weight="duotone" color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
           <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No Visitors Found</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '440px', margin: '0 auto' }}>
             {isStaff
@@ -358,7 +358,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <IconFileText size={20} color="var(--bitnox-cyan)" />
+                <FileText size={20} weight="duotone" color="var(--bitnox-cyan)" />
                 <span>Visitor Appointment Dossier</span>
               </h3>
               <button className="btn-icon" onClick={() => setSelectedVisitor(null)}>
@@ -372,11 +372,11 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
                   <h2 style={{ fontSize: '1.4rem' }}>{selectedVisitor.full_name}</h2>
                   <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <IconPhone size={12} /> {selectedVisitor.phone_number}
+                      <Phone size={12} weight="bold" /> {selectedVisitor.phone_number}
                     </span>
                     {selectedVisitor.email && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <IconMail size={12} /> {selectedVisitor.email}
+                        <Envelope size={12} weight="bold" /> {selectedVisitor.email}
                       </span>
                     )}
                   </div>
@@ -460,7 +460,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
                   }}
                 >
                   <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: '#4ade80', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <IconCircleCheck size={16} />
+                    <CheckCircle size={16} weight="bold" />
                     <span>Conclude & Check Out Appointment</span>
                   </div>
                   <input

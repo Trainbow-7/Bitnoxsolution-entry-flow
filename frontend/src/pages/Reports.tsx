@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { Department, PurposeOfVisit, ReportSummary, Visitor } from '../types';
 import {
-  IconFileSpreadsheet,
-  IconFileDownload,
-  IconCalendar,
-  IconFilter,
-  IconBuilding,
-  IconSparkles,
-  IconDownload,
-  IconCircleCheck,
-  IconClock,
-  IconCircleX,
-  IconFileCheck,
-} from '@tabler/icons-react';
+  FileXls,
+  FilePdf,
+  CalendarBlank,
+  Funnel,
+  Buildings,
+  Sparkle,
+  DownloadSimple,
+  CheckCircle,
+  Clock,
+  XCircle,
+  FileText,
+} from '@phosphor-icons/react';
 
 export const Reports: React.FC = () => {
   const [preset, setPreset] = useState<'Today' | 'This Week' | 'This Month' | 'Custom'>('This Month');
@@ -129,7 +129,7 @@ export const Reports: React.FC = () => {
             disabled={downloadingExcel || loading}
             style={{ gap: '0.5rem', color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.4)' }}
           >
-            <IconFileSpreadsheet size={16} />
+            <FileXls size={16} weight="bold" />
             <span>{downloadingExcel ? 'Exporting...' : 'Export Excel (.xlsx)'}</span>
           </button>
 
@@ -139,7 +139,7 @@ export const Reports: React.FC = () => {
             disabled={downloadingPdf || loading}
             style={{ gap: '0.5rem' }}
           >
-            <IconFileDownload size={16} />
+            <FilePdf size={16} weight="bold" />
             <span>{downloadingPdf ? 'Rendering PDF...' : 'Download PDF Report'}</span>
           </button>
         </div>
@@ -156,35 +156,35 @@ export const Reports: React.FC = () => {
             className={`chip ${preset === 'Today' && department === 'All' ? 'active' : ''}`}
             onClick={() => applyTemplate('daily')}
           >
-            <IconClock size={13} /> Daily Summary
+            <Clock size={13} weight="bold" /> Daily Summary
           </button>
           <button
             type="button"
             className={`chip ${preset === 'This Week' && department === 'All' ? 'active' : ''}`}
             onClick={() => applyTemplate('weekly')}
           >
-            <IconCalendar size={13} /> Weekly Summary
+            <CalendarBlank size={13} weight="bold" /> Weekly Summary
           </button>
           <button
             type="button"
             className={`chip ${preset === 'This Month' && department === 'All' ? 'active' : ''}`}
             onClick={() => applyTemplate('monthly')}
           >
-            <IconFileCheck size={13} /> Monthly Summary
+            <FileText size={13} weight="bold" /> Monthly Summary
           </button>
           <button
             type="button"
             className={`chip ${department === 'Tech Institute' ? 'active' : ''}`}
             onClick={() => applyTemplate('tech')}
           >
-            <IconBuilding size={13} /> Technology Institute Report
+            <Buildings size={13} weight="duotone" /> Technology Institute Report
           </button>
           <button
             type="button"
             className={`chip ${department === 'Dry Cleaning' ? 'active' : ''}`}
             onClick={() => applyTemplate('clean')}
           >
-            <IconSparkles size={13} /> Dry Cleaning Service Report
+            <Sparkle size={13} weight="duotone" /> Dry Cleaning Service Report
           </button>
         </div>
       </div>
@@ -194,7 +194,7 @@ export const Reports: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end' }}>
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconCalendar size={14} /> Date Preset
+              <CalendarBlank size={14} weight="bold" /> Date Preset
             </label>
             <select
               className="form-control"
@@ -234,7 +234,7 @@ export const Reports: React.FC = () => {
 
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconBuilding size={14} /> Department
+              <Buildings size={14} weight="duotone" /> Department
             </label>
             <select
               className="form-control"
@@ -249,7 +249,7 @@ export const Reports: React.FC = () => {
 
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconFilter size={14} /> Purpose of Visit
+              <Funnel size={14} weight="bold" /> Purpose of Visit
             </label>
             <select
               className="form-control"
@@ -311,7 +311,7 @@ export const Reports: React.FC = () => {
         <div className="card-header">
           <div>
             <div className="card-title">
-              <IconFileCheck size={18} color="var(--bitnox-cyan)" />
+              <FileText size={18} weight="duotone" color="var(--bitnox-cyan)" />
               <span>Report Data Preview ({visitors.length} Records)</span>
             </div>
             <div className="card-subtitle">

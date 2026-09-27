@@ -3,14 +3,14 @@ import { api } from '../api/client';
 import { Staff, User, UserRole } from '../types';
 import { useAuth } from '../context/AuthContext';
 import {
-  IconPlus,
-  IconEdit,
-  IconTrash,
-  IconBriefcase,
-  IconLock,
-  IconMail,
-  IconUser,
-} from '@tabler/icons-react';
+  Plus,
+  PencilSimple,
+  Trash,
+  Briefcase,
+  Lock,
+  Envelope,
+  User as UserIcon,
+} from '@phosphor-icons/react';
 
 export const UserManagement: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -153,7 +153,7 @@ export const UserManagement: React.FC = () => {
         </div>
 
         <button className="btn btn-primary" onClick={openAddModal} style={{ gap: '0.4rem' }}>
-          <IconPlus size={16} />
+          <Plus size={16} weight="bold" />
           <span>Add System User</span>
         </button>
       </div>
@@ -216,7 +216,7 @@ export const UserManagement: React.FC = () => {
                           onClick={() => openEditModal(u)}
                           title="Edit User Account"
                         >
-                          <IconEdit size={13} />
+                          <PencilSimple size={13} weight="bold" />
                           <span>Edit</span>
                         </button>
 
@@ -226,7 +226,7 @@ export const UserManagement: React.FC = () => {
                             onClick={() => setDeletingUser(u)}
                             title="Delete User Account"
                           >
-                            <IconTrash size={13} />
+                            <Trash size={13} weight="bold" />
                             <span>Delete</span>
                           </button>
                         )}
@@ -255,7 +255,7 @@ export const UserManagement: React.FC = () => {
                 )}
                 <div className="form-group">
                   <label className="form-label">
-                    <IconUser size={14} /> Full Name <span className="required">*</span>
+                    <UserIcon size={14} weight="bold" /> Full Name <span className="required">*</span>
                   </label>
                   <input
                     className="form-control"
@@ -269,7 +269,7 @@ export const UserManagement: React.FC = () => {
 
                 <div className="form-group">
                   <label className="form-label">
-                    <IconMail size={14} /> Email Address <span className="required">*</span>
+                    <Envelope size={14} weight="bold" /> Email Address <span className="required">*</span>
                   </label>
                   <input
                     type="email"
@@ -283,7 +283,7 @@ export const UserManagement: React.FC = () => {
 
                 <div className="form-group">
                   <label className="form-label">
-                    <IconLock size={14} /> Password <span className="required">*</span>
+                    <Lock size={14} weight="bold" /> Password <span className="required">*</span>
                   </label>
                   <input
                     type="password"
@@ -311,7 +311,7 @@ export const UserManagement: React.FC = () => {
                 {role === 'Staff' && (
                   <div className="form-group">
                     <label className="form-label">
-                      <IconBriefcase size={14} /> Link to Staff Member Record <span className="required">*</span>
+                      <Briefcase size={14} weight="duotone" /> Link to Staff Member Record <span className="required">*</span>
                     </label>
                     <select
                       className="form-control"

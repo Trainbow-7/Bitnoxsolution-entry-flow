@@ -1,18 +1,18 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  IconLayoutDashboard,
-  IconUserPlus,
-  IconBroadcast,
-  IconFileText,
-  IconChartBar,
-  IconUsers,
-  IconShieldExclamation,
-  IconSettings,
-  IconUserCheck,
-  IconBuilding,
-  IconHistory,
-} from '@tabler/icons-react';
+  SquaresFour,
+  UserPlus,
+  Broadcast,
+  FileText,
+  ChartBar,
+  Users,
+  ShieldWarning,
+  Gear,
+  UserCheck,
+  Buildings,
+  ClockCounterClockwise,
+} from '@phosphor-icons/react';
 
 interface SidebarProps {
   currentTab: string;
@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'checkin' ? 'active' : ''}`}
                 onClick={() => handleTabClick('checkin')}
               >
-                <IconUserPlus size={18} stroke={1.6} />
+                <UserPlus size={18} weight="duotone" />
                 <span>Visitor Check-In</span>
               </button>
 
@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'currently-in-office' ? 'active' : ''}`}
                 onClick={() => handleTabClick('currently-in-office')}
               >
-                <IconBroadcast size={18} color="#f59e0b" stroke={1.6} />
+                <Broadcast size={18} color="#f59e0b" weight="duotone" />
                 <span>Currently In Office</span>
                 {liveCount > 0 && <span className="badge-count">{liveCount}</span>}
               </button>
@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'visitor-log' ? 'active' : ''}`}
                 onClick={() => handleTabClick('visitor-log')}
               >
-                <IconFileText size={18} stroke={1.6} />
+                <FileText size={18} weight="duotone" />
                 <span>Visitor History Log</span>
               </button>
             </>
@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'my-visitors' ? 'active' : ''}`}
                 onClick={() => handleTabClick('my-visitors')}
               >
-                <IconUserCheck size={18} stroke={1.6} />
+                <UserCheck size={18} weight="duotone" />
                 <span>My Visitors</span>
                 {liveCount > 0 && <span className="badge-count">{liveCount}</span>}
               </button>
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'my-visitor-history' ? 'active' : ''}`}
                 onClick={() => handleTabClick('my-visitor-history')}
               >
-                <IconHistory size={18} stroke={1.6} />
+                <ClockCounterClockwise size={18} weight="duotone" />
                 <span>My Visit History</span>
               </button>
             </>
@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'dashboard' ? 'active' : ''}`}
                 onClick={() => handleTabClick('dashboard')}
               >
-                <IconLayoutDashboard size={18} stroke={1.6} />
+                <SquaresFour size={18} weight="duotone" />
                 <span>Executive Dashboard</span>
               </button>
 
@@ -127,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'checkin' ? 'active' : ''}`}
                 onClick={() => handleTabClick('checkin')}
               >
-                <IconUserPlus size={18} stroke={1.6} />
+                <UserPlus size={18} weight="duotone" />
                 <span>Visitor Check-In</span>
               </button>
 
@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'currently-in-office' ? 'active' : ''}`}
                 onClick={() => handleTabClick('currently-in-office')}
               >
-                <IconBroadcast size={18} color="#f59e0b" stroke={1.6} />
+                <Broadcast size={18} color="#f59e0b" weight="duotone" />
                 <span>Currently In Office</span>
                 {liveCount > 0 && <span className="badge-count">{liveCount}</span>}
               </button>
@@ -144,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'visitor-log' ? 'active' : ''}`}
                 onClick={() => handleTabClick('visitor-log')}
               >
-                <IconFileText size={18} stroke={1.6} />
+                <FileText size={18} weight="duotone" />
                 <span>Visitor History Log</span>
               </button>
 
@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'my-visitors' ? 'active' : ''}`}
                 onClick={() => handleTabClick('my-visitors')}
               >
-                <IconUserCheck size={18} stroke={1.6} />
+                <UserCheck size={18} weight="duotone" />
                 <span>Staff Visitors Oversight</span>
               </button>
 
@@ -162,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'reports' ? 'active' : ''}`}
                 onClick={() => handleTabClick('reports')}
               >
-                <IconChartBar size={18} stroke={1.6} />
+                <ChartBar size={18} weight="duotone" />
                 <span>Reports & Exports</span>
               </button>
 
@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'staff-mgmt' ? 'active' : ''}`}
                 onClick={() => handleTabClick('staff-mgmt')}
               >
-                <IconBuilding size={18} stroke={1.6} />
+                <Buildings size={18} weight="duotone" />
                 <span>Staff Directory</span>
               </button>
 
@@ -178,7 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'user-mgmt' ? 'active' : ''}`}
                 onClick={() => handleTabClick('user-mgmt')}
               >
-                <IconUsers size={18} stroke={1.6} />
+                <Users size={18} weight="duotone" />
                 <span>User Accounts</span>
               </button>
 
@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'audit-log' ? 'active' : ''}`}
                 onClick={() => handleTabClick('audit-log')}
               >
-                <IconShieldExclamation size={18} stroke={1.6} />
+                <ShieldWarning size={18} weight="duotone" />
                 <span>Security Audit Log</span>
               </button>
 
@@ -194,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`nav-link ${currentTab === 'settings' ? 'active' : ''}`}
                 onClick={() => handleTabClick('settings')}
               >
-                <IconSettings size={18} stroke={1.6} />
+                <Gear size={18} weight="duotone" />
                 <span>System Settings</span>
               </button>
             </>

@@ -2,18 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 import { Visitor, Department } from '../types';
 import {
-  IconBroadcast,
-  IconRefresh,
-  IconClock,
-  IconUserCheck,
-  IconCircleCheck,
-  IconCircleX,
-  IconBuildingSkyscraper,
-  IconSparkles,
-  IconPhone,
-  IconAlertCircle,
-  IconSearch,
-} from '@tabler/icons-react';
+  Broadcast,
+  ArrowsClockwise,
+  Clock,
+  UserCheck,
+  CheckCircle,
+  XCircle,
+  Buildings,
+  Sparkle,
+  Phone,
+  WarningCircle,
+  MagnifyingGlass,
+} from '@phosphor-icons/react';
 
 interface CurrentlyInOfficeProps {
   onCountChange?: (count: number) => void;
@@ -172,7 +172,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
             disabled={refreshing}
             style={{ gap: '0.4rem' }}
           >
-            <IconRefresh size={14} stroke={1.6} className={refreshing ? 'spin' : ''} />
+            <ArrowsClockwise size={14} weight="bold" className={refreshing ? 'spin' : ''} />
             <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
@@ -206,7 +206,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
       {/* Filter and Search Bar */}
       <div className="filter-bar">
         <div className="search-input-wrapper">
-          <IconSearch size={16} stroke={1.6} />
+          <MagnifyingGlass size={16} weight="bold" />
           <input
             className="form-control"
             placeholder="Search active visitors by name, phone, or staff..."
@@ -222,8 +222,8 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
               className={`chip ${selectedDept === dept ? 'active' : ''}`}
               onClick={() => setSelectedDept(dept)}
             >
-              {dept === 'Tech Institute' && <IconBuildingSkyscraper size={13} stroke={1.6} />}
-              {dept === 'Dry Cleaning' && <IconSparkles size={13} stroke={1.6} />}
+              {dept === 'Tech Institute' && <Buildings size={13} weight="duotone" />}
+              {dept === 'Dry Cleaning' && <Sparkle size={13} weight="duotone" />}
               <span>{dept}</span>
             </button>
           ))}
@@ -247,7 +247,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
             justifyContent: 'center',
           }}
         >
-          <IconBroadcast size={48} stroke={1.6} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+          <Broadcast size={48} weight="duotone" color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
           <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No Visitors Currently In Office</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '400px' }}>
             {searchQuery
@@ -310,13 +310,13 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                         )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>
-                        <IconPhone size={12} stroke={1.6} />
+                        <Phone size={12} weight="bold" />
                         <span>{visitor.phone_number}</span>
                       </div>
                     </div>
 
                     <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`} style={{ whiteSpace: 'nowrap' }}>
-                      {isTech ? <IconBuildingSkyscraper size={12} stroke={1.6} /> : <IconSparkles size={12} stroke={1.6} />}
+                      {isTech ? <Buildings size={12} weight="duotone" /> : <Sparkle size={12} weight="duotone" />}
                       <span>{visitor.department}</span>
                     </span>
                   </div>
@@ -378,7 +378,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <IconClock size={13} color="var(--text-muted)" stroke={1.6} />
+                      <Clock size={13} color="var(--text-muted)" weight="bold" />
                       <span>Arrived: {arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
 
@@ -413,7 +413,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                     onClick={() => setCheckingOutVisitor(visitor)}
                     style={{ width: '100%', gap: '0.4rem' }}
                   >
-                    <IconCircleCheck size={15} stroke={1.6} />
+                    <CheckCircle size={15} weight="bold" />
                     <span>Check Out</span>
                   </button>
 
@@ -423,7 +423,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                     title="Cancel Visit"
                     style={{ padding: '0.4rem 0.8rem' }}
                   >
-                    <IconCircleX size={15} stroke={1.6} />
+                    <XCircle size={15} weight="bold" />
                     <span>Cancel</span>
                   </button>
                 </div>
@@ -439,7 +439,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
           <div className="modal-content">
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <IconCircleCheck size={20} color="#10b981" stroke={1.6} />
+                <CheckCircle size={20} color="#10b981" weight="duotone" />
                 <span>Confirm Visitor Check-Out</span>
               </h3>
               <button
@@ -521,7 +521,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
           <div className="modal-content">
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f87171' }}>
-                <IconAlertCircle size={20} stroke={1.6} />
+                <WarningCircle size={20} weight="duotone" />
                 <span>Cancel Visitor Entry</span>
               </h3>
               <button

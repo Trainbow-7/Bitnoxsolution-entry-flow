@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { SystemSettings } from '../types';
 import {
-  IconSettings,
-  IconDeviceFloppy,
-  IconClock,
-  IconBuilding,
-  IconSparkles,
-  IconDatabase,
-  IconCircleCheck,
-  IconAlertCircle,
-  IconArchive,
-} from '@tabler/icons-react';
+  Gear,
+  FloppyDisk,
+  Clock,
+  Buildings,
+  Sparkle,
+  Database,
+  CheckCircle,
+  WarningCircle,
+  Archive,
+} from '@phosphor-icons/react';
 
 export const Settings: React.FC = () => {
   const [settings, setSettings] = useState<SystemSettings | null>(null);
@@ -95,7 +95,7 @@ export const Settings: React.FC = () => {
             fontSize: '0.9rem',
           }}
         >
-          {statusMessage.type === 'success' ? <IconCircleCheck size={16} /> : <IconAlertCircle size={16} />}
+          {statusMessage.type === 'success' ? <CheckCircle size={16} weight="bold" /> : <WarningCircle size={16} weight="bold" />}
           <span>{statusMessage.text}</span>
         </div>
       )}
@@ -106,7 +106,7 @@ export const Settings: React.FC = () => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconClock size={18} color="var(--bitnox-cyan)" />
+                <Clock size={18} color="var(--bitnox-cyan)" weight="bold" />
                 <span>Visitor Data Retention Policy</span>
               </div>
               <div className="card-subtitle">
@@ -162,7 +162,7 @@ export const Settings: React.FC = () => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconBuilding size={18} color="var(--clean-teal)" />
+                <Buildings size={18} color="var(--clean-teal)" weight="duotone" />
                 <span>Premises & Business Unit Branding</span>
               </div>
               <div className="card-subtitle">Labels displayed across reception banners, receipts, and export headers</div>
@@ -185,7 +185,7 @@ export const Settings: React.FC = () => {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label" htmlFor="tech-name-input">
-                <IconBuilding size={14} color="var(--bitnox-cyan)" /> Tech Institute Unit Name
+                <Buildings size={14} color="var(--bitnox-cyan)" weight="duotone" /> Tech Institute Unit Name
               </label>
               <input
                 id="tech-name-input"
@@ -198,7 +198,7 @@ export const Settings: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label" htmlFor="clean-name-input">
-                <IconSparkles size={14} color="#2dd4bf" /> Dry Cleaning Unit Name
+                <Sparkle size={14} color="#2dd4bf" weight="duotone" /> Dry Cleaning Unit Name
               </label>
               <input
                 id="clean-name-input"
@@ -216,7 +216,7 @@ export const Settings: React.FC = () => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconDatabase size={18} color="var(--text-muted)" />
+                <Database size={18} color="var(--text-muted)" weight="duotone" />
                 <span>Database & Deployment Architecture</span>
               </div>
               <div className="card-subtitle">Engine connection status and compatibility</div>
@@ -254,7 +254,7 @@ export const Settings: React.FC = () => {
         {/* Submit */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button type="submit" className="btn btn-primary btn-lg" disabled={saving}>
-            <IconDeviceFloppy size={18} />
+            <FloppyDisk size={18} weight="bold" />
             <span>{saving ? 'Saving Policy...' : 'Save Configuration'}</span>
           </button>
         </div>

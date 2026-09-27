@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { OverstayAlertData } from '../types';
 import {
-  IconAlertTriangle,
-  IconClock,
-  IconUser,
-  IconBuildingSkyscraper,
-  IconSparkles,
-  IconCircleCheck,
-  IconX,
-  IconChevronRight,
-  IconChevronLeft,
-  IconPhone,
-  IconShieldExclamation,
-} from '@tabler/icons-react';
+  Warning,
+  Clock,
+  User,
+  Buildings,
+  Sparkle,
+  CheckCircle,
+  X,
+  CaretRight,
+  CaretLeft,
+  Phone,
+  ShieldWarning,
+} from '@phosphor-icons/react';
 
 interface OverstayAlertModalProps {
   alerts: OverstayAlertData[];
@@ -105,7 +105,7 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
                 border: '1px solid rgba(239, 68, 68, 0.35)',
               }}
             >
-              <IconAlertTriangle size={20} stroke={1.6} className="pulse" />
+              <Warning size={20} weight="fill" className="pulse" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -154,7 +154,7 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
             }}
             title="Dismiss popup for this visitor"
           >
-            <IconX size={20} stroke={1.6} />
+            <X size={20} weight="bold" />
           </button>
         </div>
 
@@ -172,7 +172,7 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <IconClock size={20} color="#f87171" stroke={1.6} />
+            <Clock size={20} color="#f87171" weight="bold" />
             <div>
               <div style={{ fontSize: '0.75rem', color: '#fca5a5', fontWeight: 600 }}>
                 Elapsed Time on Premises
@@ -222,13 +222,13 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
                   marginTop: '0.15rem',
                 }}
               >
-                <IconPhone size={12} stroke={1.6} />
+                <Phone size={12} weight="bold" />
                 <span>{visitor.phone_number}</span>
               </div>
             </div>
 
             <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`}>
-              {isTech ? <IconBuildingSkyscraper size={12} stroke={1.6} /> : <IconSparkles size={12} stroke={1.6} />}
+              {isTech ? <Buildings size={12} weight="duotone" /> : <Sparkle size={12} weight="duotone" />}
               <span>{visitor.department}</span>
             </span>
           </div>
@@ -287,7 +287,7 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
                 padding: '0.65rem 1rem',
               }}
             >
-              <IconCircleCheck size={16} stroke={1.6} />
+              <CheckCircle size={16} weight="bold" />
               <span>{isProcessing ? 'Checking Out...' : 'Check Out Now'}</span>
             </button>
 
@@ -362,7 +362,7 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
               onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
               style={{ padding: '0.2rem 0.5rem' }}
             >
-              <IconChevronLeft size={16} stroke={1.6} />
+              <CaretLeft size={16} weight="bold" />
               <span>Previous</span>
             </button>
 
@@ -378,7 +378,7 @@ export const OverstayAlertModal: React.FC<OverstayAlertModalProps> = ({
               style={{ padding: '0.2rem 0.5rem' }}
             >
               <span>Next</span>
-              <IconChevronRight size={16} stroke={1.6} />
+              <CaretRight size={16} weight="bold" />
             </button>
           </div>
         )}

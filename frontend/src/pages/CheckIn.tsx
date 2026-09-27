@@ -4,29 +4,29 @@ import { Department, ExpectedDuration, PurposeOfVisit, Staff, Visitor } from '..
 import { QRCodeView } from '../components/QRCodeView';
 import { playCheckInChime } from '../utils/audioChime';
 import {
-  IconBuilding,
-  IconSparkles,
-  IconCircleCheck,
-  IconClock,
-  IconUserCheck,
-  IconPhone,
-  IconMail,
-  IconUser,
-  IconHelpCircle,
-  IconFilePencil,
-  IconArrowRight,
-  IconQrcode,
-  IconDeviceMobile,
-  IconVolume,
-  IconVolumeOff,
-  IconExternalLink,
-  IconRefresh,
-  IconRadio,
-  IconCopy,
-  IconCheck,
-  IconBolt,
-  IconWorld,
-} from '@tabler/icons-react';
+  Buildings,
+  Sparkle,
+  CheckCircle,
+  Clock,
+  UserCheck,
+  Phone,
+  Envelope,
+  User,
+  Question,
+  NotePencil,
+  ArrowRight,
+  QrCode,
+  DeviceMobile,
+  SpeakerHigh,
+  SpeakerSlash,
+  ArrowSquareOut,
+  ArrowsClockwise,
+  Broadcast,
+  Copy,
+  Check,
+  Lightning,
+  Globe,
+} from '@phosphor-icons/react';
 
 interface CheckInProps {
   onSuccessCheckIn?: (visitor: Visitor) => void;
@@ -368,7 +368,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   gap: '0.3rem',
                 }}
               >
-                <IconBolt size={11} /> Kiosk Active
+                <Lightning size={12} weight="fill" /> Kiosk Active
               </span>
             )}
           </div>
@@ -399,7 +399,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               fontWeight: 700,
             }}
           >
-            <IconFilePencil size={14} />
+            <NotePencil size={15} weight="bold" />
             <span>Manual Entry</span>
           </button>
 
@@ -414,7 +414,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               fontWeight: 700,
             }}
           >
-            <IconQrcode size={14} />
+            <QrCode size={15} weight="bold" />
             <span>QR Self Check-In</span>
           </button>
         </div>
@@ -454,7 +454,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                 }}
                 title="Toggle front-desk audio chime on new check-in"
               >
-                {soundEnabled ? <IconVolume size={14} /> : <IconVolumeOff size={14} />}
+                {soundEnabled ? <SpeakerHigh size={15} weight="bold" /> : <SpeakerSlash size={15} weight="bold" />}
                 <span>{soundEnabled ? 'Chime On' : 'Chime Off'}</span>
               </button>
             </div>
@@ -474,7 +474,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   marginBottom: '0.5rem',
                 }}
               >
-                <IconDeviceMobile size={16} /> Contactless Visitor Arrival
+                <DeviceMobile size={17} weight="duotone" /> Contactless Visitor Arrival
               </div>
               <h2 style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>
                 Scan With Your Phone to Check In
@@ -499,7 +499,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  <IconRefresh size={28} className="spin" color="var(--bitnox-cyan)" />
+                  <ArrowsClockwise size={28} className="spin" color="var(--bitnox-cyan)" />
                 </div>
               ) : (
                 <QRCodeView
@@ -680,7 +680,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                     color: 'var(--bitnox-cyan)',
                   }}
                 >
-                  <IconWorld size={13} />
+                  <Globe size={14} weight="bold" />
                   <span>EMBEDDED TARGET: RECEPTION CHECK-IN TERMINAL</span>
                 </div>
                 <button
@@ -780,7 +780,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                       flexShrink: 0,
                     }}
                   >
-                    {copiedLink ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                    {copiedLink ? <Check size={13} weight="bold" /> : <Copy size={13} weight="bold" />}
                     <span>{copiedLink ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
@@ -797,7 +797,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                 style={{ gap: '0.4rem', boxShadow: 'var(--glow-tech)' }}
                 title="Open Reception Check-In Terminal in a new browser tab"
               >
-                <IconExternalLink size={14} />
+                <ArrowSquareOut size={15} weight="bold" />
                 <span>Open Reception Check-In Terminal</span>
               </a>
 
@@ -807,7 +807,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                 onClick={copyQrLink}
                 style={{ gap: '0.4rem' }}
               >
-                {copiedLink ? <IconCheck size={14} color="#34d399" /> : <IconCopy size={14} />}
+                {copiedLink ? <Check size={15} color="#34d399" weight="bold" /> : <Copy size={15} weight="bold" />}
                 <span>{copiedLink ? 'Link Copied!' : 'Copy Terminal Link'}</span>
               </button>
 
@@ -819,7 +819,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                 style={{ gap: '0.4rem' }}
                 title="Force generate fresh QR token"
               >
-                <IconRefresh size={14} className={qrLoading ? 'spin' : ''} />
+                <ArrowsClockwise size={15} className={qrLoading ? 'spin' : ''} weight="bold" />
                 <span>Refresh Terminal Code</span>
               </button>
             </div>
@@ -844,9 +844,9 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   onClick={onNavigateToLive}
                   style={{ gap: '0.35rem', fontSize: '0.8rem' }}
                 >
-                  <IconRadio size={13} color="#f59e0b" />
+                  <Broadcast size={14} color="#f59e0b" weight="bold" />
                   <span>View All In Office</span>
-                  <IconArrowRight size={13} />
+                  <ArrowRight size={14} weight="bold" />
                 </button>
               )}
             </div>
@@ -860,7 +860,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   fontSize: '0.9rem',
                 }}
               >
-                <IconDeviceMobile size={32} style={{ opacity: 0.35, margin: '0 auto 0.75rem' }} />
+                <DeviceMobile size={32} weight="duotone" style={{ opacity: 0.35, margin: '0 auto 0.75rem' }} />
                 <p>Awaiting incoming visitor self-check-ins...</p>
                 <p style={{ fontSize: '0.78rem', marginTop: '0.25rem' }}>
                   Visitors who scan the QR code will appear here instantly without a page refresh.
@@ -922,7 +922,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                           </td>
                           <td>
                             <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`}>
-                              {isTech ? <IconBuilding size={11} /> : <IconSparkles size={11} />}
+                              {isTech ? <Buildings size={12} weight="duotone" /> : <Sparkle size={12} weight="duotone" />}
                               <span>{visitor.department}</span>
                             </span>
                           </td>
@@ -954,7 +954,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                                 fontSize: '0.7rem',
                               }}
                             >
-                              <IconQrcode size={11} />
+                              <QrCode size={12} weight="bold" />
                               <span>QR Mobile</span>
                             </span>
                           </td>
@@ -994,7 +994,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
             <form onSubmit={handleManualSubmit}>
               {/* Step 1: Select Business Unit / Department */}
               <label className="form-label" style={{ marginBottom: '0.75rem' }}>
-                <IconBuilding size={16} /> Select Business Department <span className="required">*</span>
+                <Buildings size={16} weight="duotone" /> Select Business Department <span className="required">*</span>
               </label>
               <div className="dept-switch">
                 <button
@@ -1002,8 +1002,9 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   className={`dept-btn ${department === 'Tech Institute' ? 'active-tech' : ''}`}
                   onClick={() => handleDepartmentChange('Tech Institute')}
                 >
-                  <IconBuilding
+                  <Buildings
                     size={26}
+                    weight="duotone"
                     color={department === 'Tech Institute' ? 'var(--bitnox-cyan)' : 'currentColor'}
                   />
                   <div className="dept-btn-title">Technology Training Institute</div>
@@ -1015,7 +1016,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   className={`dept-btn ${department === 'Dry Cleaning' ? 'active-clean' : ''}`}
                   onClick={() => handleDepartmentChange('Dry Cleaning')}
                 >
-                  <IconSparkles size={26} color={department === 'Dry Cleaning' ? '#2dd4bf' : 'currentColor'} />
+                  <Sparkle size={26} weight="duotone" color={department === 'Dry Cleaning' ? '#2dd4bf' : 'currentColor'} />
                   <div className="dept-btn-title">Dry Cleaning Service</div>
                   <div className="dept-btn-subtitle">Garments • Silk/Wool • Express Laundry • Pickups</div>
                 </button>
@@ -1025,7 +1026,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label" htmlFor="visitor-name">
-                    <IconUser size={14} /> Visitor Full Name <span className="required">*</span>
+                    <User size={14} weight="bold" /> Visitor Full Name <span className="required">*</span>
                   </label>
                   <input
                     id="visitor-name"
@@ -1040,7 +1041,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
 
                 <div className="form-group">
                   <label className="form-label" htmlFor="visitor-phone">
-                    <IconPhone size={14} /> Phone Number <span className="required">*</span>
+                    <Phone size={14} weight="bold" /> Phone Number <span className="required">*</span>
                   </label>
                   <input
                     id="visitor-phone"
@@ -1056,7 +1057,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label" htmlFor="visitor-email">
-                    <IconMail size={14} /> Email Address <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(Optional)</span>
+                    <Envelope size={14} weight="bold" /> Email Address <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(Optional)</span>
                   </label>
                   <input
                     id="visitor-email"
@@ -1070,7 +1071,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
 
                 <div className="form-group">
                   <label className="form-label" htmlFor="staff-member">
-                    <IconUserCheck size={14} /> Staff Member to See <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(Optional)</span>
+                    <UserCheck size={14} weight="bold" /> Staff Member to See <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(Optional)</span>
                   </label>
                   <select
                     id="staff-member"
@@ -1091,7 +1092,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               {/* Step 3: Purpose of Visit Chips */}
               <div className="form-group">
                 <label className="form-label">
-                  <IconHelpCircle size={14} /> Purpose of Visit <span className="required">*</span>
+                  <Question size={14} weight="bold" /> Purpose of Visit <span className="required">*</span>
                 </label>
                 <div className="chip-group">
                   {(department === 'Tech Institute' ? TECH_PURPOSES : CLEAN_PURPOSES).map((purpose) => (
@@ -1111,7 +1112,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">
-                    <IconClock size={14} /> Expected Duration
+                    <Clock size={14} weight="bold" /> Expected Duration
                   </label>
                   <div className="chip-group">
                     {DURATION_OPTIONS.map((dur) => (
@@ -1188,7 +1189,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   ) : (
                     <>
                       <span>Check In Visitor</span>
-                      <IconArrowRight size={18} />
+                      <ArrowRight size={18} weight="bold" />
                     </>
                   )}
                 </button>
@@ -1216,7 +1217,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                   margin: '0 auto 1.25rem',
                 }}
               >
-                <IconCircleCheck size={36} />
+                <CheckCircle size={36} weight="duotone" />
               </div>
 
               <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Visitor Checked In!</h2>
@@ -1275,7 +1276,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                     }}
                   >
                     <span>View Currently in Office</span>
-                    <IconArrowRight size={16} />
+                    <ArrowRight size={16} weight="bold" />
                   </button>
                 )}
               </div>

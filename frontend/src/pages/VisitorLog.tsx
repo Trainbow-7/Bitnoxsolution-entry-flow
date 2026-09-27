@@ -3,20 +3,20 @@ import { api } from '../api/client';
 import { Department, PurposeOfVisit, Staff, Visitor, VisitorStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
 import {
-  IconFileText,
-  IconSearch,
-  IconBuilding,
-  IconSparkles,
-  IconPhone,
-  IconMail,
-  IconClock,
-  IconUserCheck,
-  IconChevronLeft,
-  IconChevronRight,
-  IconFilter,
-  IconEye,
-  IconCalendar,
-} from '@tabler/icons-react';
+  FileText,
+  MagnifyingGlass,
+  Buildings,
+  Sparkle,
+  Phone,
+  Envelope,
+  Clock,
+  UserCheck,
+  CaretLeft,
+  CaretRight,
+  Funnel,
+  Eye,
+  CalendarBlank,
+} from '@phosphor-icons/react';
 
 export const VisitorLog: React.FC = () => {
   const { isReceptionist } = useAuth();
@@ -93,7 +93,7 @@ export const VisitorLog: React.FC = () => {
           {/* Free-text Search */}
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconSearch size={14} /> Search Records
+              <MagnifyingGlass size={14} weight="bold" /> Search Records
             </label>
             <input
               className="form-control"
@@ -109,7 +109,7 @@ export const VisitorLog: React.FC = () => {
           {/* Preset Buttons */}
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconCalendar size={14} /> Date Preset
+              <CalendarBlank size={14} weight="bold" /> Date Preset
             </label>
             <select
               className="form-control"
@@ -129,7 +129,7 @@ export const VisitorLog: React.FC = () => {
           {/* Department Filter */}
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconBuilding size={14} /> Department
+              <Buildings size={14} weight="duotone" /> Department
             </label>
             <select
               className="form-control"
@@ -166,7 +166,7 @@ export const VisitorLog: React.FC = () => {
           {/* Staff Filter */}
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              <IconUserCheck size={14} /> Staff Assigned
+              <UserCheck size={14} weight="bold" /> Staff Assigned
             </label>
             <select
               className="form-control"
@@ -194,7 +194,7 @@ export const VisitorLog: React.FC = () => {
         </div>
       ) : visitors.length === 0 ? (
         <div className="card" style={{ padding: '3.5rem 2rem', textAlign: 'center' }}>
-          <IconFileText size={48} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+          <FileText size={48} weight="duotone" color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
           <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No Matching Records Found</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Try expanding your date preset or clearing active search keywords.
@@ -245,7 +245,7 @@ export const VisitorLog: React.FC = () => {
                     </td>
                     <td>
                       <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`}>
-                        {isTech ? <IconBuilding size={11} /> : <IconSparkles size={11} />}
+                        {isTech ? <Buildings size={12} weight="duotone" /> : <Sparkle size={12} weight="duotone" />}
                         <span>{v.department}</span>
                       </span>
                     </td>
@@ -301,7 +301,7 @@ export const VisitorLog: React.FC = () => {
                           setSelectedVisitor(v);
                         }}
                       >
-                        <IconEye size={13} />
+                        <Eye size={13} weight="bold" />
                         <span>View</span>
                       </button>
                     </td>
@@ -321,7 +321,7 @@ export const VisitorLog: React.FC = () => {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
-            <IconChevronLeft size={16} />
+            <CaretLeft size={16} weight="bold" />
             <span>Previous</span>
           </button>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -333,7 +333,7 @@ export const VisitorLog: React.FC = () => {
             disabled={page === totalPages}
           >
             <span>Next</span>
-            <IconChevronRight size={16} />
+            <CaretRight size={16} weight="bold" />
           </button>
         </div>
       )}
@@ -344,7 +344,7 @@ export const VisitorLog: React.FC = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '650px' }}>
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <IconFileText size={20} color="var(--bitnox-cyan)" />
+                <FileText size={20} weight="duotone" color="var(--bitnox-cyan)" />
                 <span>Visitor Complete Registry Dossier</span>
               </h3>
               <button className="btn-icon" onClick={() => setSelectedVisitor(null)}>
@@ -358,11 +358,11 @@ export const VisitorLog: React.FC = () => {
                   <h2 style={{ fontSize: '1.4rem' }}>{selectedVisitor.full_name}</h2>
                   <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <IconPhone size={12} /> {selectedVisitor.phone_number}
+                      <Phone size={12} weight="bold" /> {selectedVisitor.phone_number}
                     </span>
                     {selectedVisitor.email && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <IconMail size={12} /> {selectedVisitor.email}
+                        <Envelope size={12} weight="bold" /> {selectedVisitor.email}
                       </span>
                     )}
                   </div>

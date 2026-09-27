@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { Department, ExpectedDuration, PurposeOfVisit, Staff } from '../types';
 import {
-  IconBuilding,
-  IconSparkles,
-  IconCircleCheck,
-  IconClock,
-  IconUser,
-  IconPhone,
-  IconMail,
-  IconAlertCircle,
-  IconHelpCircle,
-  IconCalendar,
-  IconChevronDown,
-  IconArrowRight,
-  IconShieldExclamation,
-  IconBolt,
-} from '@tabler/icons-react';
+  Buildings,
+  Sparkle,
+  CheckCircle,
+  Clock,
+  User,
+  Phone,
+  Envelope,
+  WarningCircle,
+  Question,
+  CalendarBlank,
+  CaretDown,
+  ArrowRight,
+  ShieldWarning,
+  Lightning,
+} from '@phosphor-icons/react';
 
 interface MobileSelfCheckInProps {
   token: string;
@@ -220,7 +220,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
               margin: '0 auto 1.25rem',
             }}
           >
-            <IconShieldExclamation size={36} />
+            <ShieldWarning size={36} weight="duotone" />
           </div>
 
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginBottom: '0.5rem' }}>
@@ -290,7 +290,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
               boxShadow: '0 0 25px rgba(16, 185, 129, 0.3)',
             }}
           >
-            <IconCircleCheck size={42} />
+            <CheckCircle size={42} weight="duotone" />
           </div>
 
           <span
@@ -336,7 +336,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Terminal:</span>
               <span style={{ color: 'var(--bitnox-cyan)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                <IconBolt size={12} /> Reception Check-In Terminal
+                <Lightning size={12} weight="fill" /> Reception Check-In Terminal
               </span>
             </div>
 
@@ -438,7 +438,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
             marginBottom: '0.6rem',
           }}
         >
-          <IconBolt size={12} /> Live Front Desk Linked • Active Session
+          <Lightning size={12} weight="fill" /> Live Front Desk Linked • Active Session
         </div>
         <h1 style={{ fontSize: '1.55rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff' }}>
           Reception Check-In Terminal
@@ -463,7 +463,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
             marginBottom: '1.25rem',
           }}
         >
-          <IconAlertCircle size={16} />
+          <WarningCircle size={16} weight="bold" />
           <span>{submitError}</span>
         </div>
       )}
@@ -472,7 +472,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
         {/* Step 1: Department Selection (Tap Cards) */}
         <div>
           <label className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-            <IconBuilding size={15} color="var(--bitnox-cyan)" /> Select Business Unit <span className="required">*</span>
+            <Buildings size={15} color="var(--bitnox-cyan)" weight="duotone" /> Select Business Unit <span className="required">*</span>
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <button
@@ -481,7 +481,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
               onClick={() => handleDeptChange('Tech Institute')}
               style={{ padding: '1rem 0.75rem', minHeight: '80px', textAlign: 'center' }}
             >
-              <IconBuilding size={24} color={department === 'Tech Institute' ? 'var(--bitnox-cyan)' : 'currentColor'} />
+              <Buildings size={24} color={department === 'Tech Institute' ? 'var(--bitnox-cyan)' : 'currentColor'} weight="duotone" />
               <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>Tech Institute</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Courses & Labs</div>
             </button>
@@ -492,7 +492,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
               onClick={() => handleDeptChange('Dry Cleaning')}
               style={{ padding: '1rem 0.75rem', minHeight: '80px', textAlign: 'center' }}
             >
-              <IconSparkles size={24} color={department === 'Dry Cleaning' ? '#2dd4bf' : 'currentColor'} />
+              <Sparkle size={24} color={department === 'Dry Cleaning' ? '#2dd4bf' : 'currentColor'} weight="duotone" />
               <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>Dry Cleaning</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Garments & Pickup</div>
             </button>
@@ -503,7 +503,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
         <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="visitor-fullname">
-              <IconUser size={14} color="var(--bitnox-cyan)" /> Full Name <span className="required">*</span>
+              <User size={14} color="var(--bitnox-cyan)" weight="bold" /> Full Name <span className="required">*</span>
             </label>
             <input
               id="visitor-fullname"
@@ -517,7 +517,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="visitor-phone">
-              <IconPhone size={14} color="var(--bitnox-cyan)" /> Phone Number <span className="required">*</span>
+              <Phone size={14} color="var(--bitnox-cyan)" weight="bold" /> Phone Number <span className="required">*</span>
             </label>
             <input
               id="visitor-phone"
@@ -532,7 +532,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="visitor-email">
-              <IconMail size={14} /> Email Address <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(Optional)</span>
+              <Envelope size={14} weight="bold" /> Email Address <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(Optional)</span>
             </label>
             <input
               id="visitor-email"
@@ -548,7 +548,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
         {/* Step 3: Purpose of Visit (Chip Pills) */}
         <div>
           <label className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-            <IconHelpCircle size={14} color="var(--bitnox-cyan)" /> Purpose of Visit <span className="required">*</span>
+            <Question size={14} color="var(--bitnox-cyan)" weight="bold" /> Purpose of Visit <span className="required">*</span>
           </label>
           <div className="chip-group">
             {(department === 'Tech Institute' ? TECH_PURPOSES : CLEAN_PURPOSES).map((purpose) => (
@@ -567,7 +567,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
         {/* Step 4: Host Staff Selection (Optional) */}
         <div className="form-group" style={{ marginBottom: 0 }}>
           <label className="form-label" htmlFor="staff-select">
-            <IconUser size={14} /> Staff Specialist to See{' '}
+            <User size={14} weight="bold" /> Staff Specialist to See{' '}
             <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(Optional)</span>
           </label>
           <select
@@ -588,7 +588,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
         {/* Step 5: Expected Duration */}
         <div>
           <label className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-            <IconClock size={14} /> Estimated Visit Duration
+            <Clock size={14} weight="bold" /> Estimated Visit Duration
           </label>
           <div className="chip-group">
             {DURATION_OPTIONS.map((dur) => (
@@ -643,7 +643,7 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
           ) : (
             <>
               <span>Complete Check-In</span>
-              <IconArrowRight size={18} />
+              <ArrowRight size={18} weight="bold" />
             </>
           )}
         </button>

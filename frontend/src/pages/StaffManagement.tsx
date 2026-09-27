@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { Department, Staff } from '../types';
 import {
-  IconBuilding,
-  IconPlus,
-  IconEdit,
-  IconTrash,
-  IconSparkles,
-  IconUsers,
-  IconSearch,
-} from '@tabler/icons-react';
+  Buildings,
+  Plus,
+  PencilSimple,
+  Trash,
+  Sparkle,
+  Users,
+  MagnifyingGlass,
+} from '@phosphor-icons/react';
 
 export const StaffManagement: React.FC = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
@@ -136,7 +136,7 @@ export const StaffManagement: React.FC = () => {
         </div>
 
         <button className="btn btn-primary" onClick={openAddModal} style={{ gap: '0.4rem' }}>
-          <IconPlus size={16} />
+          <Plus size={16} weight="bold" />
           <span>Add Staff Member</span>
         </button>
       </div>
@@ -144,7 +144,7 @@ export const StaffManagement: React.FC = () => {
       {/* Filter and Search Bar */}
       <div className="filter-bar">
         <div className="search-input-wrapper">
-          <IconSearch size={16} />
+          <MagnifyingGlass size={16} weight="bold" />
           <input
             className="form-control"
             placeholder="Search staff by name or role title..."
@@ -160,8 +160,8 @@ export const StaffManagement: React.FC = () => {
               className={`chip ${filterDept === dept ? 'active' : ''}`}
               onClick={() => setFilterDept(dept)}
             >
-              {dept === 'Tech Institute' && <IconBuilding size={13} />}
-              {dept === 'Dry Cleaning' && <IconSparkles size={13} />}
+              {dept === 'Tech Institute' && <Buildings size={13} weight="duotone" />}
+              {dept === 'Dry Cleaning' && <Sparkle size={13} weight="duotone" />}
               <span>{dept}</span>
             </button>
           ))}
@@ -175,7 +175,7 @@ export const StaffManagement: React.FC = () => {
         </div>
       ) : filtered.length === 0 ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <IconUsers size={48} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+          <Users size={48} weight="duotone" color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
           <h3>No Staff Members Found</h3>
           <p style={{ color: 'var(--text-secondary)' }}>Click "Add Staff Member" to add a new record.</p>
         </div>
@@ -262,7 +262,7 @@ export const StaffManagement: React.FC = () => {
                     </td>
                     <td>
                       <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`}>
-                        {isTech ? <IconBuilding size={11} /> : <IconSparkles size={11} />}
+                        {isTech ? <Buildings size={12} weight="duotone" /> : <Sparkle size={12} weight="duotone" />}
                         <span>{staff.department}</span>
                       </span>
                     </td>
@@ -279,7 +279,7 @@ export const StaffManagement: React.FC = () => {
                           onClick={() => openEditModal(staff)}
                           title="Edit Staff Member"
                         >
-                          <IconEdit size={13} />
+                          <PencilSimple size={13} weight="bold" />
                           <span>Edit</span>
                         </button>
 
@@ -288,7 +288,7 @@ export const StaffManagement: React.FC = () => {
                           onClick={() => setDeletingStaff(staff)}
                           title="Delete Staff Member"
                         >
-                          <IconTrash size={13} />
+                          <Trash size={13} weight="bold" />
                           <span>Delete</span>
                         </button>
                       </div>

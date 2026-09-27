@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { AuditLog as AuditLogType } from '../types';
 import {
-  IconShieldExclamation,
-  IconSearch,
-  IconChevronLeft,
-  IconChevronRight,
-  IconClock,
-  IconUser,
-  IconEye,
-  IconActivity,
-} from '@tabler/icons-react';
+  ShieldWarning,
+  MagnifyingGlass,
+  CaretLeft,
+  CaretRight,
+  Clock,
+  User,
+  Eye,
+  Pulse,
+} from '@phosphor-icons/react';
 
 export const AuditLog: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogType[]>([]);
@@ -74,7 +74,7 @@ export const AuditLog: React.FC = () => {
       {/* Filter Bar */}
       <div className="filter-bar">
         <div className="search-input-wrapper">
-          <IconSearch size={16} stroke={1.6} />
+          <MagnifyingGlass size={16} weight="bold" />
           <input
             className="form-control"
             placeholder="Search audit trail by actor, action, or visitor details..."
@@ -111,7 +111,7 @@ export const AuditLog: React.FC = () => {
         </div>
       ) : logs.length === 0 ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <IconShieldExclamation size={48} stroke={1.6} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+          <ShieldWarning size={48} weight="duotone" color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
           <h3>No Audit Log Entries Found</h3>
           <p style={{ color: 'var(--text-secondary)' }}>No events match your current filter settings.</p>
         </div>
@@ -198,7 +198,7 @@ export const AuditLog: React.FC = () => {
                           setInspectLog(log);
                         }}
                       >
-                        <IconEye size={13} stroke={1.6} />
+                        <Eye size={13} weight="bold" />
                         <span>Inspect</span>
                       </button>
                     </td>
@@ -218,7 +218,7 @@ export const AuditLog: React.FC = () => {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
-            <IconChevronLeft size={16} stroke={1.6} />
+            <CaretLeft size={16} weight="bold" />
             <span>Previous</span>
           </button>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -230,7 +230,7 @@ export const AuditLog: React.FC = () => {
             disabled={page === totalPages}
           >
             <span>Next</span>
-            <IconChevronRight size={16} stroke={1.6} />
+            <CaretRight size={16} weight="bold" />
           </button>
         </div>
       )}
@@ -241,7 +241,7 @@ export const AuditLog: React.FC = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px' }}>
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <IconActivity size={18} color="var(--bitnox-cyan)" stroke={1.6} />
+                <Pulse size={18} color="var(--bitnox-cyan)" weight="bold" />
                 <span>Audit Trail Event Inspector</span>
               </h3>
               <button className="btn-icon" onClick={() => setInspectLog(null)}>&times;</button>

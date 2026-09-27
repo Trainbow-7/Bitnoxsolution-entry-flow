@@ -6,20 +6,20 @@ import { DonutChart } from '../components/charts/DonutChart';
 import { PeakHoursChart } from '../components/charts/PeakHoursChart';
 import { useAuth } from '../context/AuthContext';
 import {
-  IconUsers,
-  IconBroadcast,
-  IconCircleCheck,
-  IconCircleX,
-  IconTrendingUp,
-  IconChartPie,
-  IconClock,
-  IconBriefcase,
-  IconBuildingSkyscraper,
-  IconSparkles,
-  IconRefresh,
-  IconArrowRight,
-  IconAlertTriangle,
-} from '@tabler/icons-react';
+  Users,
+  Broadcast,
+  CheckCircle,
+  XCircle,
+  TrendUp,
+  ChartPieSlice,
+  Clock,
+  Briefcase,
+  Buildings,
+  Sparkle,
+  ArrowsClockwise,
+  ArrowRight,
+  Warning,
+} from '@phosphor-icons/react';
 
 interface DashboardProps {
   onNavigateToTab?: (tab: string) => void;
@@ -58,7 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
   if (loading || !stats) {
     return (
       <div className="page-wrapper" style={{ textAlign: 'center', padding: '5rem 0' }}>
-        <IconRefresh size={32} className="spin" color="var(--tech-indigo)" style={{ margin: '0 auto 1rem' }} />
+        <ArrowsClockwise size={32} className="spin" color="var(--tech-indigo)" weight="bold" style={{ margin: '0 auto 1rem' }} />
         <p style={{ color: 'var(--text-secondary)' }}>Compiling executive analytics and telemetry...</p>
       </div>
     );
@@ -99,7 +99,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
               title="Navigate to Reports & Exports"
             >
               <span>View Reports</span>
-              <IconArrowRight size={14} stroke={1.6} />
+              <ArrowRight size={14} weight="bold" />
             </button>
           )}
 
@@ -109,7 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
             disabled={refreshing}
             style={{ gap: '0.4rem' }}
           >
-            <IconRefresh size={14} stroke={1.6} className={refreshing ? 'spin' : ''} />
+            <ArrowsClockwise size={14} weight="bold" className={refreshing ? 'spin' : ''} />
             <span>{refreshing ? 'Refreshing...' : 'Refresh Metrics'}</span>
           </button>
         </div>
@@ -146,7 +146,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
                 border: '1px solid rgba(239, 68, 68, 0.4)',
               }}
             >
-              <IconAlertTriangle size={18} stroke={1.6} />
+              <Warning size={18} weight="fill" />
             </div>
             <div>
               <strong style={{ color: '#fff', fontSize: '0.95rem' }}>
@@ -170,7 +170,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
               }}
             >
               <span>View Overstayed Visitors</span>
-              <IconArrowRight size={14} stroke={1.6} />
+              <ArrowRight size={14} weight="bold" />
             </button>
           )}
         </div>
@@ -185,7 +185,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
             <div className="stat-sub">Across both departments</div>
           </div>
           <div className="stat-icon tech">
-            <IconUsers size={24} stroke={1.6} />
+            <Users size={24} weight="duotone" />
           </div>
         </div>
 
@@ -201,7 +201,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
             </div>
           </div>
           <div className="stat-icon warning">
-            <IconBroadcast size={24} stroke={1.6} />
+            <Broadcast size={24} weight="duotone" />
           </div>
         </div>
 
@@ -214,7 +214,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
             <div className="stat-sub">Checked out successfully</div>
           </div>
           <div className="stat-icon success">
-            <IconCircleCheck size={24} stroke={1.6} />
+            <CheckCircle size={24} weight="duotone" />
           </div>
         </div>
 
@@ -227,7 +227,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
             <div className="stat-sub">Departed without service</div>
           </div>
           <div className="stat-icon danger">
-            <IconCircleX size={24} stroke={1.6} />
+            <XCircle size={24} weight="duotone" />
           </div>
         </div>
       </div>
@@ -239,7 +239,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconTrendingUp size={18} color="var(--tech-indigo)" stroke={1.6} />
+                <TrendUp size={18} color="var(--tech-indigo)" weight="bold" />
                 <span>30-Day Daily Visitor Volume</span>
               </div>
               <div className="card-subtitle">
@@ -255,7 +255,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconChartPie size={18} color="var(--clean-teal)" stroke={1.6} />
+                <ChartPieSlice size={18} color="var(--clean-teal)" weight="bold" />
                 <span>Department Split</span>
               </div>
               <div className="card-subtitle">Volume ratio by business unit</div>
@@ -272,7 +272,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconChartPie size={18} color="#f59e0b" stroke={1.6} />
+                <ChartPieSlice size={18} color="#f59e0b" weight="bold" />
                 <span>Visits by Purpose</span>
               </div>
               <div className="card-subtitle">Categorization of visitor inquiries</div>
@@ -286,7 +286,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="card-header">
             <div>
               <div className="card-title">
-                <IconClock size={18} color="var(--bitnox-cyan)" stroke={1.6} />
+                <Clock size={18} color="var(--bitnox-cyan)" weight="bold" />
                 <span>Peak Visiting Hours</span>
               </div>
               <div className="card-subtitle">Hourly traffic density (8:00 AM – 7:00 PM)</div>
@@ -301,7 +301,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
         <div className="card-header">
           <div>
             <div className="card-title">
-              <IconBriefcase size={18} color="var(--tech-indigo)" stroke={1.6} />
+              <Briefcase size={18} color="var(--tech-indigo)" weight="duotone" />
               <span>Staff Workload Distribution</span>
             </div>
             <div className="card-subtitle">
@@ -336,7 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
                     </td>
                     <td>
                       <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`}>
-                        {isTech ? <IconBuildingSkyscraper size={11} stroke={1.6} /> : <IconSparkles size={11} stroke={1.6} />}
+                        {isTech ? <Buildings size={12} weight="duotone" /> : <Sparkle size={12} weight="duotone" />}
                         <span>{staff.department}</span>
                       </span>
                     </td>

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  IconBuildingSkyscraper,
-  IconSparkles,
-  IconLogout,
-  IconClock,
-  IconMenu2,
-  IconChevronDown,
-  IconUserCheck,
-  IconShield,
-  IconBriefcase,
-} from '@tabler/icons-react';
+  Buildings,
+  Sparkle,
+  SignOut,
+  Clock,
+  List,
+  CaretDown,
+  UserCheck,
+  Shield,
+  Briefcase,
+} from '@phosphor-icons/react';
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -54,17 +54,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
           style={{ display: 'none' }}
           id="mobile-nav-toggle"
         >
-          <IconMenu2 size={20} stroke={1.6} />
+          <List size={20} weight="bold" />
         </button>
 
         <div className="dual-unit-indicator">
           <div className="unit-chip tech">
-            <IconBuildingSkyscraper size={14} stroke={1.6} />
+            <Buildings size={14} weight="duotone" />
             <span>Tech Institute</span>
           </div>
           <span style={{ color: 'var(--text-muted)' }}>•</span>
           <div className="unit-chip clean">
-            <IconSparkles size={14} stroke={1.6} />
+            <Sparkle size={14} weight="duotone" />
             <span>Dry Cleaning</span>
           </div>
         </div>
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
             border: '1px solid var(--border-subtle)',
           }}
         >
-          <IconClock size={14} color="var(--bitnox-cyan)" stroke={1.6} />
+          <Clock size={14} color="var(--bitnox-cyan)" weight="bold" />
           <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{timeStr}</span>
         </div>
 
@@ -119,9 +119,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
               style={{ border: '1px dashed var(--bitnox-cyan)', gap: '0.4rem' }}
               title="Fast switch between demo accounts without re-entering credentials"
             >
-              <IconUserCheck size={14} color="var(--bitnox-cyan)" stroke={1.6} />
+              <UserCheck size={14} color="var(--bitnox-cyan)" weight="bold" />
               <span style={{ fontSize: '0.8rem' }}>Role Switcher</span>
-              <IconChevronDown size={14} stroke={1.6} />
+              <CaretDown size={14} weight="bold" />
             </button>
 
             {showSwitchMenu && (
@@ -196,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                   style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
                   onClick={() => handleRoleSwitch('Staff-Usman')}
                 >
-                  <IconBriefcase size={16} color="var(--bitnox-cyan)" stroke={1.6} />
+                  <Briefcase size={16} color="var(--bitnox-cyan)" weight="duotone" />
                   <span>Staff: Mr. Usman Oyeboade (Data)</span>
                 </button>
                 <button
@@ -204,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                   style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
                   onClick={() => handleRoleSwitch('Staff-Elena')}
                 >
-                  <IconBriefcase size={16} color="#2dd4bf" stroke={1.6} />
+                  <Briefcase size={16} color="#2dd4bf" weight="duotone" />
                   <span>Staff: Elena (Dry Cleaning)</span>
                 </button>
                 <button
@@ -289,7 +289,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
             title="Sign out of Bitnox VMS"
             style={{ padding: '0.4rem 0.75rem' }}
           >
-            <IconLogout size={14} stroke={1.6} />
+            <SignOut size={14} weight="bold" />
             <span style={{ fontSize: '0.8rem' }}>Logout</span>
           </button>
         </div>

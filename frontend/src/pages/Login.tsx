@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  IconBuildingSkyscraper,
-  IconSparkles,
-  IconLock,
-  IconMail,
-  IconArrowRight,
-  IconShield,
-  IconBriefcase,
-  IconAlertCircle,
-} from '@tabler/icons-react';
+  Buildings,
+  Sparkle,
+  Lock,
+  Envelope,
+  ArrowRight,
+  ShieldCheck,
+  Briefcase,
+  WarningCircle,
+} from '@phosphor-icons/react';
 
 interface LoginProps {
   onSuccess: (role: string) => void;
@@ -118,11 +118,11 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--bitnox-cyan)', fontWeight: 600 }}>
-              <IconBuildingSkyscraper size={12} stroke={1.6} /> Tech Institute
+              <Buildings size={14} weight="duotone" /> Tech Institute
             </span>
             <span style={{ color: 'var(--text-muted)' }}>|</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#2dd4bf', fontWeight: 600 }}>
-              <IconSparkles size={12} stroke={1.6} /> Dry Cleaning
+              <Sparkle size={14} weight="duotone" /> Dry Cleaning
             </span>
           </div>
         </div>
@@ -142,7 +142,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               marginBottom: '1.25rem',
             }}
           >
-            <IconAlertCircle size={16} stroke={1.6} />
+            <WarningCircle size={16} weight="bold" />
             <span>{error}</span>
           </div>
         )}
@@ -150,7 +150,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="email-input">
-              <IconMail size={14} stroke={1.6} /> Email Address
+              <Envelope size={14} weight="bold" /> Email Address
             </label>
             <input
               id="email-input"
@@ -165,7 +165,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
           <div className="form-group">
             <label className="form-label" htmlFor="password-input">
-              <IconLock size={14} stroke={1.6} /> Password
+              <Lock size={14} weight="bold" /> Password
             </label>
             <input
               id="password-input"
@@ -189,7 +189,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             ) : (
               <>
                 <span>Sign In to Terminal</span>
-                <IconArrowRight size={18} stroke={1.6} />
+                <ArrowRight size={18} weight="bold" />
               </>
             )}
           </button>
@@ -294,7 +294,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               disabled={loading}
               style={{ justifyContent: 'flex-start', padding: '0.6rem 0.75rem', gap: '0.6rem', minWidth: 0 }}
             >
-              <IconBriefcase size={18} color="var(--bitnox-cyan)" stroke={1.8} style={{ flexShrink: 0 }} />
+              <Briefcase size={18} color="var(--bitnox-cyan)" weight="duotone" style={{ flexShrink: 0 }} />
               <div style={{ textAlign: 'left', lineHeight: 1.2, minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.825rem', color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Mr. Oyeboade Usman O.</div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--bitnox-cyan)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Data Analytics Instructor</div>
@@ -308,7 +308,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               disabled={loading}
               style={{ justifyContent: 'flex-start', padding: '0.6rem 0.75rem', gap: '0.6rem', minWidth: 0 }}
             >
-              <IconBriefcase size={18} color="#2dd4bf" stroke={1.8} style={{ flexShrink: 0 }} />
+              <Briefcase size={18} color="#2dd4bf" weight="duotone" style={{ flexShrink: 0 }} />
               <div style={{ textAlign: 'left', lineHeight: 1.2, minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.825rem', color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Elena G.</div>
                 <div style={{ fontSize: '0.7rem', color: '#2dd4bf', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Garment Lead • Clean</div>

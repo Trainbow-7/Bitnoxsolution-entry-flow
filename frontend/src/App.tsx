@@ -16,9 +16,9 @@ import { Settings } from './pages/Settings';
 import { MobileSelfCheckIn } from './pages/MobileSelfCheckIn';
 import { OverstayAlertModal } from './components/OverstayAlertModal';
 import { playCheckInChime } from './utils/audioChime';
-import { OverstayAlertData, UserRole } from './types';
 import { api } from './api/client';
-import { IconShieldExclamation } from '@tabler/icons-react';
+import { UserRole, OverstayAlertData } from './types';
+import { ShieldWarning } from '@phosphor-icons/react';
 
 function getSessionTokenFromUrl(): string | null {
   const path = window.location.pathname;
@@ -425,7 +425,7 @@ const MainApp: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <IconShieldExclamation size={18} color="#ef4444" stroke={1.6} />
+              <ShieldWarning size={18} color="#ef4444" weight="bold" />
               <span>{accessDeniedMessage}</span>
             </div>
             <button
