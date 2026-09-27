@@ -10,7 +10,16 @@ import {
   UserCheck,
   Shield,
   Briefcase,
+  SpeakerHigh,
+  SpeakerSlash,
+  BellSimple,
 } from '@phosphor-icons/react';
+import {
+  isAudioEnabled,
+  toggleAudio,
+  subscribeAudioState,
+  playCheckInChime,
+} from '../../utils/audioChime';
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -21,6 +30,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
   const { user, role, isAdmin, isReceptionist, logout, quickLogin } = useAuth();
   const [timeStr, setTimeStr] = useState<string>('');
   const [showSwitchMenu, setShowSwitchMenu] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => isAudioEnabled());
+
+  useEffect(() => {
+    return subscribeAudioState((enabled) => {
+      setSoundEnabled(enabled);
+    });
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -109,6 +125,42 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
           <Clock size={14} color="var(--bitnox-cyan)" weight="bold" />
           <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{timeStr}</span>
         </div>
+
+        {/* Chime Sound Status & Test for Receptionist & Admin */}
+        {(isReceptionist || isAdmin) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => toggleAudio()}
+              style={{
+                gap: '0.35rem',
+                fontSize: '0.78rem',
+                padding: '0.35rem 0.65rem',
+                borderColor: soundEnabled ? 'var(--bitnox-cyan-border)' : 'var(--border-subtle)',
+                color: soundEnabled ? 'var(--bitnox-cyan)' : 'var(--text-muted)',
+              }}
+              title={soundEnabled ? 'Reception chime is ON. Click to mute.' : 'Reception chime is MUTED. Click to unmute.'}
+            >
+              {soundEnabled ? <SpeakerHigh size={14} weight="bold" /> : <SpeakerSlash size={14} weight="bold" />}
+              <span>{soundEnabled ? 'Chime' : 'Muted'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => playCheckInChime(true)}
+              style={{
+                padding: '0.35rem 0.55rem',
+                fontSize: '0.75rem',
+              }}
+              title="Test front-desk chime sound"
+            >
+              <BellSimple size={14} weight="bold" color="var(--bitnox-cyan)" />
+              <span>Test</span>
+            </button>
+          </div>
+        )}
 
         {/* Demo Quick Role Switcher Button - Shown ONLY on Admin Dashboard */}
         {showRoleSwitcher && (

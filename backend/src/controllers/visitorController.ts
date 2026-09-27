@@ -3,6 +3,7 @@ import { prisma } from '../prisma.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { logAudit } from '../utils/audit.js';
 import { getActiveOverstayedVisitors } from '../services/overstayService.js';
+import { broadcastNewVisitor } from './checkinSessionController.js';
 
 export async function checkInVisitor(req: AuthRequest, res: Response): Promise<void> {
   try {
@@ -60,6 +61,9 @@ export async function checkInVisitor(req: AuthRequest, res: Response): Promise<v
         arrival_datetime: visitor.arrival_datetime,
       },
     });
+
+    // Broadcast instant real-time event to reception terminals and dashboards
+    broadcastNewVisitor(visitor);
 
     res.status(201).json(visitor);
   } catch (error) {

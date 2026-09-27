@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
 import { Department, ExpectedDuration, PurposeOfVisit, Staff, Visitor } from '../types';
 import { QRCodeView } from '../components/QRCodeView';
-import { playCheckInChime } from '../utils/audioChime';
+import {
+  playCheckInChime,
+  isAudioEnabled,
+  setAudioEnabled,
+  subscribeAudioState,
+} from '../utils/audioChime';
 import {
   Buildings,
   Sparkle,
@@ -78,8 +83,14 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
   const [qrLoading, setQrLoading] = useState<boolean>(false);
   const [recentSelfCheckins, setRecentSelfCheckins] = useState<Visitor[]>([]);
   const [highlightedVisitorId, setHighlightedVisitorId] = useState<string | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => isAudioEnabled());
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
+
+  useEffect(() => {
+    return subscribeAudioState((enabled) => {
+      setSoundEnabled(enabled);
+    });
+  }, []);
 
   // Network Host and Public Tunnel Detection for reachable QR codes
   const [serverLanIp, setServerLanIp] = useState<string>('');
@@ -273,6 +284,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       });
 
       setCreatedVisitor(visitor);
+      playCheckInChime();
       if (onSuccessCheckIn) {
         onSuccessCheckIn(visitor);
       }
@@ -441,11 +453,25 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               boxShadow: '0 15px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 210, 255, 0.1)',
             }}
           >
-            {/* Sound alert toggle button */}
-            <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
+            {/* Sound alert toggle & test buttons */}
+            <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', display: 'flex', gap: '0.4rem' }}>
               <button
+                type="button"
                 className="btn btn-secondary btn-sm"
-                onClick={() => setSoundEnabled(!soundEnabled)}
+                onClick={() => playCheckInChime(true)}
+                style={{
+                  gap: '0.35rem',
+                  fontSize: '0.75rem',
+                  padding: '4px 8px',
+                }}
+                title="Test front-desk chime sound"
+              >
+                <span>🔔 Test Chime</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setAudioEnabled(!soundEnabled)}
                 style={{
                   gap: '0.4rem',
                   fontSize: '0.78rem',

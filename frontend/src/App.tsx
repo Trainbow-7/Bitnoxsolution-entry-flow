@@ -15,7 +15,7 @@ import { AuditLog } from './pages/AuditLog';
 import { Settings } from './pages/Settings';
 import { MobileSelfCheckIn } from './pages/MobileSelfCheckIn';
 import { OverstayAlertModal } from './components/OverstayAlertModal';
-import { playCheckInChime } from './utils/audioChime';
+import { playCheckInChime, playOverdueAlertSound } from './utils/audioChime';
 import { api } from './api/client';
 import { UserRole, OverstayAlertData } from './types';
 import { ShieldWarning } from '@phosphor-icons/react';
@@ -223,16 +223,29 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     if (!user || (!isAdmin && !isReceptionist)) return;
 
-    api.visitors
-      .getOverstayAlerts()
-      .then((data) => {
-        const unDismissed = data.filter((item) => !dismissedOverstayIdsRef.current.has(item.visitor.id));
-        setOverstayAlerts(unDismissed);
-      })
-      .catch((err) => console.error('Failed to load overstay alerts:', err));
+    const syncOverstayAlerts = () => {
+      api.visitors
+        .getOverstayAlerts()
+        .then((data) => {
+          const unDismissed = data.filter((item) => !dismissedOverstayIdsRef.current.has(item.visitor.id));
+          setOverstayAlerts((prev) => {
+            const prevIds = new Set(prev.map((a) => a.visitor.id));
+            const hasNewAlerts = unDismissed.some((a) => !prevIds.has(a.visitor.id));
+            if (hasNewAlerts && prev.length > 0) {
+              playOverdueAlertSound();
+            }
+            return unDismissed;
+          });
+        })
+        .catch((err) => console.error('Failed to load overstay alerts:', err));
+    };
+
+    syncOverstayAlerts();
+    const interval = setInterval(syncOverstayAlerts, 20000);
+    return () => clearInterval(interval);
   }, [user, isAdmin, isReceptionist]);
 
-  // Real-time SSE listener for OVERSTAY_ALERT events - Receptionist and Admin only
+  // Real-time SSE listener for NEW_VISITOR & OVERSTAY_ALERT events - Receptionist and Admin only
   useEffect(() => {
     if (!user || (!isAdmin && !isReceptionist)) return;
 
@@ -241,12 +254,20 @@ const MainApp: React.FC = () => {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+
+        // 1. Live Visitor Arrival Chime (from QR self-checkin kiosk or manual terminal)
+        if (data.type === 'NEW_VISITOR' && data.visitor) {
+          playCheckInChime();
+          setLiveCount((c) => c + 1);
+        }
+
+        // 2. Overstay / Overdue Visitor Alert Sound
         if (data.type === 'OVERSTAY_ALERT' && data.visitor) {
           if (dismissedOverstayIdsRef.current.has(data.visitor.id)) {
             return;
           }
 
-          playCheckInChime();
+          playOverdueAlertSound();
 
           setOverstayAlerts((prev) => {
             const exists = prev.some((a) => a.visitor.id === data.visitor.id);
@@ -257,7 +278,7 @@ const MainApp: React.FC = () => {
           });
         }
       } catch (err) {
-        console.error('Error handling SSE overstay event in MainApp:', err);
+        console.error('Error handling SSE event in MainApp:', err);
       }
     };
 
