@@ -69,24 +69,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
           </div>
         </div>
 
-        {/* Receptionist Headshot & Front Desk Badge */}
-        <div
-          className="receptionist-badge"
-          title="Receptionist: Kikelomo Oluwanishola (Front Desk & Check-In)"
-        >
-          <div className="receptionist-badge-avatar">
-            <img
-              src="/receptionist.jpg"
-              alt="Receptionist Kikelomo Oluwanishola"
-              className="receptionist-img"
-            />
-            <span className="receptionist-online-dot" />
+        {/* Receptionist Headshot & Front Desk Badge - Shown only for Receptionist on check-in screens, hidden on Executive Dashboard */}
+        {isReceptionist && currentTab !== 'dashboard' && (
+          <div
+            className="receptionist-badge"
+            title="Receptionist: Kikelomo Oluwanishola (Front Desk & Check-In)"
+          >
+            <div className="receptionist-badge-avatar">
+              <img
+                src="/receptionist.jpg"
+                alt="Receptionist Kikelomo Oluwanishola"
+                className="receptionist-img"
+              />
+              <span className="receptionist-online-dot" />
+            </div>
+            <div className="receptionist-badge-meta">
+              <span className="receptionist-badge-role">Front Desk</span>
+              <span className="receptionist-badge-name">Kikelomo O.</span>
+            </div>
           </div>
-          <div className="receptionist-badge-meta">
-            <span className="receptionist-badge-role">Front Desk</span>
-            <span className="receptionist-badge-name">Kikelomo O.</span>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="topbar-right">
