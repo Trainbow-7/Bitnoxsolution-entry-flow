@@ -212,6 +212,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 alt="Kikelomo Oluwanishola"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
+            ) : (isAdmin || user?.name?.toLowerCase().includes('oluwafemi')) ? (
+              <img
+                src="/engr_oluwafemi.jpg"
+                alt="Engr Oluwafemi Faleye"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : user?.name?.toLowerCase().includes('ben') ? (
+              <img
+                src="/mr_ben_sam.jpg"
+                alt="Mr. Ben Sam"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             ) : (
               user?.name ? user.name.charAt(0).toUpperCase() : 'U'
             )}

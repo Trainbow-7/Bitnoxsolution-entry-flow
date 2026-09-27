@@ -244,7 +244,18 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               disabled={loading}
               style={{ justifyContent: 'flex-start', padding: '0.6rem 0.75rem', gap: '0.6rem', minWidth: 0 }}
             >
-              <IconShield size={18} color="#f87171" stroke={1.8} style={{ flexShrink: 0 }} />
+              <img
+                src="/engr_oluwafemi.jpg"
+                alt="Engr Oluwafemi Faleye"
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '1.5px solid #f87171',
+                  flexShrink: 0,
+                }}
+              />
               <div style={{ textAlign: 'left', lineHeight: 1.2, minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.825rem', color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Engr Oluwafemi F.</div>
                 <div style={{ fontSize: '0.7rem', color: '#f87171', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>CEO / Admin</div>

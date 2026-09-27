@@ -197,7 +197,68 @@ export const StaffManagement: React.FC = () => {
                 return (
                   <tr key={staff.id}>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{staff.name}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        {staff.name.toLowerCase().includes('oluwafemi') ? (
+                          <img
+                            src="/engr_oluwafemi.jpg"
+                            alt={staff.name}
+                            style={{
+                              width: 30,
+                              height: 30,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid #f87171',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : staff.name.toLowerCase().includes('ben') ? (
+                          <img
+                            src="/mr_ben_sam.jpg"
+                            alt={staff.name}
+                            style={{
+                              width: 30,
+                              height: 30,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid var(--bitnox-cyan)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : staff.name.toLowerCase().includes('kikelomo') ? (
+                          <img
+                            src="/receptionist.jpg"
+                            alt={staff.name}
+                            style={{
+                              width: 30,
+                              height: 30,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid var(--bitnox-cyan)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 30,
+                              height: 30,
+                              borderRadius: '50%',
+                              background: 'var(--bg-surface-elevated)',
+                              border: '1px solid var(--border-subtle)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              color: 'var(--text-secondary)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {staff.name.charAt(0)}
+                          </div>
+                        )}
+                        <div style={{ fontWeight: 600 }}>{staff.name}</div>
+                      </div>
                     </td>
                     <td>
                       <span className={`badge ${isTech ? 'badge-tech' : 'badge-dryclean'}`}>

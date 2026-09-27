@@ -210,7 +210,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                   style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
                   onClick={() => handleRoleSwitch('Admin')}
                 >
-                  <IconShield size={16} color="#f87171" stroke={1.6} />
+                  <img
+                    src="/engr_oluwafemi.jpg"
+                    alt="Engr Oluwafemi Faleye"
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1px solid #f87171',
+                      flexShrink: 0,
+                    }}
+                  />
                   <span>Admin / CEO (Engr Oluwafemi)</span>
                 </button>
               </div>
@@ -231,6 +242,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                 objectFit: 'cover',
                 border: '2px solid var(--bitnox-cyan)',
                 boxShadow: '0 0 10px rgba(0, 210, 255, 0.35)',
+              }}
+            />
+          ) : (isAdmin || user?.name?.toLowerCase().includes('oluwafemi')) ? (
+            <img
+              src="/engr_oluwafemi.jpg"
+              alt={user?.name || 'Engr Oluwafemi Faleye'}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '2px solid #f87171',
+                boxShadow: '0 0 10px rgba(248, 113, 113, 0.35)',
               }}
             />
           ) : user?.name?.toLowerCase().includes('ben') ? (
