@@ -121,8 +121,8 @@ bitnoxsolution-vms/
 
 ```bash
 # Clone the repository
-git clone https://github.com/Trainbow-7/Bitnixsolution-entry-flow.git
-cd Bitnixsolution-entry-flow
+git clone https://github.com/Trainbow-7/Bitnoxsolution-entry-flow.git
+cd Bitnoxsolution-entry-flow
 
 # Install backend dependencies
 cd backend && npm install
