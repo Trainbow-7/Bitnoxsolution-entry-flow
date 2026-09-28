@@ -155,11 +155,32 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
     }
   };
 
-  // 2. Fetch recent self-checkins
+  // 2. Fetch recent self-checkins with intelligent state merging
   const fetchRecentSelfCheckins = async () => {
     try {
       const recent = await api.checkinSessions.getRecent();
-      setRecentSelfCheckins(recent);
+      setRecentSelfCheckins((prev) => {
+        if (!Array.isArray(recent)) return prev;
+        const map = new Map<string, Visitor>();
+        // Add existing state items (including any real-time pushed visitors)
+        prev.forEach((v) => {
+          if (v && v.id) map.set(v.id, v);
+        });
+        // Merge fetched backend items
+        recent.forEach((v) => {
+          if (v && v.id) {
+            const existing = map.get(v.id);
+            map.set(v.id, existing ? { ...existing, ...v } : v);
+          }
+        });
+        // Sort descending by arrival time
+        const merged = Array.from(map.values()).sort((a, b) => {
+          const tA = new Date(a.arrival_datetime || 0).getTime();
+          const tB = new Date(b.arrival_datetime || 0).getTime();
+          return tB - tA;
+        });
+        return merged.slice(0, 15);
+      });
     } catch (err) {
       console.error('Failed to load recent self check-ins:', err);
     }
@@ -195,6 +216,8 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
   useEffect(() => {
     // Process new visitor arrival
     const handleNewArrival = (newVis: Visitor) => {
+      if (!newVis || !newVis.id) return;
+
       // Sound alert chime
       if (soundEnabled) {
         playCheckInChime();
@@ -203,14 +226,14 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       // Highlight newly arrived visitor
       setHighlightedVisitorId(newVis.id);
       setTimeout(() => {
-        setHighlightedVisitorId(null);
+        setHighlightedVisitorId((curr) => (curr === newVis.id ? null : curr));
       }, 8000);
 
       // Prepend to recent list
-      setRecentSelfCheckins((prev) => [
-        newVis,
-        ...prev.filter((v) => v.id !== newVis.id),
-      ].slice(0, 10));
+      setRecentSelfCheckins((prev) => {
+        const filtered = prev.filter((v) => v.id !== newVis.id && v.full_name !== newVis.full_name);
+        return [newVis, ...filtered].slice(0, 15);
+      });
 
       // Increment on-premise counter if callback provided
       if (onSuccessCheckIn) {

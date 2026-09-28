@@ -989,7 +989,7 @@ export const mockApi = {
 
     getRecent: async () => {
       const visitors = storage.getVisitors();
-      return visitors.slice(0, 5);
+      return visitors.slice(0, 15);
     },
 
     createEventSource: () => {

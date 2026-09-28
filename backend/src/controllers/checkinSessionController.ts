@@ -421,16 +421,9 @@ export function streamLiveEvents(req: Request, res: Response): void {
  */
 export async function getRecentCheckIns(req: Request, res: Response): Promise<void> {
   try {
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-
     const visitors = await prisma.visitor.findMany({
-      where: {
-        arrival_datetime: { gte: startOfToday },
-        check_in_method: 'QR Self Check-In',
-      },
       orderBy: { arrival_datetime: 'desc' },
-      take: 10,
+      take: 15,
       include: {
         staff_to_see: true,
       },

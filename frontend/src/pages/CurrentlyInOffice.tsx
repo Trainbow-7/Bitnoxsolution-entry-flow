@@ -46,8 +46,33 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
     if (!isSilent) setRefreshing(true);
     try {
       const data = await api.visitors.getCurrentlyInOffice();
-      setVisitors(data);
-      if (onCountChange) onCountChange(data.length);
+      setVisitors((prev) => {
+        if (!Array.isArray(data)) return prev;
+        const map = new Map<string, Visitor>();
+        // Add existing in-progress visitors from state
+        prev.forEach((v) => {
+          if (v && v.id && v.status === 'In Progress') {
+            map.set(v.id, v);
+          }
+        });
+        // Merge or update with backend data
+        data.forEach((v) => {
+          if (v && v.id) {
+            const existing = map.get(v.id);
+            map.set(v.id, existing ? { ...existing, ...v } : v);
+          }
+        });
+        // Sort by arrival_datetime descending
+        const merged = Array.from(map.values())
+          .filter((v) => v.status === 'In Progress')
+          .sort((a, b) => {
+            const tA = new Date(a.arrival_datetime || 0).getTime();
+            const tB = new Date(b.arrival_datetime || 0).getTime();
+            return tB - tA;
+          });
+        if (onCountChange) onCountChange(merged.length);
+        return merged;
+      });
     } catch (err: any) {
       console.error('Failed to load live visitors:', err);
     } finally {
@@ -65,19 +90,16 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
       // If status is in progress, immediately inject into live visitors view
       if (newVis.status === 'In Progress' || !newVis.status) {
         setVisitors((prev) => {
-          const exists = prev.some((v) => v.id === newVis.id);
-          if (exists) {
-            return prev.map((v) => (v.id === newVis.id ? { ...v, ...newVis } : v));
-          }
-          return [newVis, ...prev];
+          const filtered = prev.filter((v) => v.id !== newVis.id && v.full_name !== newVis.full_name);
+          const next = [{ ...newVis, status: 'In Progress' as const }, ...filtered];
+          if (onCountChange) onCountChange(next.length);
+          return next;
         });
         setHighlightedVisitorId(newVis.id);
         setTimeout(() => {
-          setHighlightedVisitorId(null);
+          setHighlightedVisitorId((curr) => (curr === newVis.id ? null : curr));
         }, 9000);
       }
-      // Silently re-verify with backend
-      fetchLiveVisitors(true);
     };
 
     // 1. Cloud Relay listener (catches phone 4G/5G mobile submissions worldwide)
