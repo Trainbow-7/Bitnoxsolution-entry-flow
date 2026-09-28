@@ -1,26 +1,5 @@
-// Vercel Serverless API Handler for Bitnox Visitor Management System
-// Provides instant zero-latency cross-device synchronization on *.vercel.app
-
-interface Visitor {
-  id: string;
-  full_name: string;
-  phone_number: string;
-  email?: string | null;
-  arrival_datetime: string;
-  checkout_datetime?: string | null;
-  purpose_of_visit: string;
-  department: 'Tech Institute' | 'Dry Cleaning';
-  staff_to_see_id?: string | null;
-  staff_to_see?: any;
-  services_requested?: string | null;
-  expected_duration?: string | null;
-  status: 'In Progress' | 'Completed' | 'Cancelled';
-  remarks?: string | null;
-  check_in_method: string;
-  created_by_user_id?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Vercel Serverless API Handler for Bitnox Visitor Management System (CommonJS / Node.js)
+// Enables real-time cross-device visitor sync on *.vercel.app
 
 const INITIAL_STAFF = [
   { id: 'staff-femi', name: 'Engr Oluwafemi Faleye', email: 'femi.faleye@bitnox.com', phone: '+234 803 123 4567', department: 'Tech Institute', role_title: 'Lead Instructor & Founder', is_active: true },
@@ -32,7 +11,7 @@ const INITIAL_STAFF = [
   { id: 'staff-david', name: 'David Kim', email: 'david.k@bitnox.com', phone: '+1 (555) 567-8901', department: 'Dry Cleaning', role_title: 'Customer Service & Intake Specialist', is_active: true },
 ];
 
-const globalVisitors: Visitor[] = [
+const globalVisitors = [
   {
     id: 'vis-initial-1',
     full_name: 'Sophia Williams',
@@ -53,9 +32,9 @@ const globalVisitors: Visitor[] = [
   },
 ];
 
-const globalSessions = new Map<string, any>();
+const globalSessions = new Map();
 
-function parseBody(req: any): Promise<any> {
+function parseBody(req) {
   return new Promise((resolve) => {
     if (req.body && typeof req.body === 'object') {
       return resolve(req.body);
@@ -68,7 +47,7 @@ function parseBody(req: any): Promise<any> {
       }
     }
     let body = '';
-    req.on('data', (chunk: any) => {
+    req.on('data', (chunk) => {
       body += chunk;
     });
     req.on('end', () => {
@@ -82,8 +61,8 @@ function parseBody(req: any): Promise<any> {
   });
 }
 
-export default async function handler(req: any, res: any) {
-  // 1. CORS Headers
+module.exports = async function handler(req, res) {
+  // 1. Universal CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -95,18 +74,15 @@ export default async function handler(req: any, res: any) {
 
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
   const pathname = url.pathname.replace(/^\/api/, '');
-  const method = req.method?.toUpperCase() || 'GET';
+  const method = (req.method || 'GET').toUpperCase();
 
-  // Helper to send JSON
-  const sendJson = (status: number, data: any) => {
+  const sendJson = (status, data) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(status).json(data);
   };
 
   try {
-    // -------------------------------------------------------------
     // Route 1: GET /checkin-sessions/recent (Live Feed)
-    // -------------------------------------------------------------
     if (method === 'GET' && pathname === '/checkin-sessions/recent') {
       const recent = [...globalVisitors]
         .sort((a, b) => new Date(b.arrival_datetime).getTime() - new Date(a.arrival_datetime).getTime())
@@ -114,9 +90,7 @@ export default async function handler(req: any, res: any) {
       return sendJson(200, recent);
     }
 
-    // -------------------------------------------------------------
     // Route 2: POST /checkin-sessions/push-visitor (Universal Sync)
-    // -------------------------------------------------------------
     if (method === 'POST' && pathname === '/checkin-sessions/push-visitor') {
       const body = await parseBody(req);
       const vis = body.visitor;
@@ -125,7 +99,7 @@ export default async function handler(req: any, res: any) {
       }
 
       const staff = INITIAL_STAFF.find((s) => s.id === vis.staff_to_see_id) || vis.staff_to_see || null;
-      const hydrated: Visitor = {
+      const hydrated = {
         id: vis.id || `vis-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
         full_name: String(vis.full_name).trim(),
         phone_number: String(vis.phone_number || '').trim(),
@@ -154,14 +128,12 @@ export default async function handler(req: any, res: any) {
       return sendJson(200, { success: true, visitor: hydrated });
     }
 
-    // -------------------------------------------------------------
     // Route 3: POST /checkin-sessions/:token/submit (Mobile Check-In)
-    // -------------------------------------------------------------
     if (method === 'POST' && pathname.startsWith('/checkin-sessions/') && pathname.endsWith('/submit')) {
       const body = await parseBody(req);
       const staff = INITIAL_STAFF.find((s) => s.id === body.staff_to_see_id) || null;
 
-      const newVisitor: Visitor = {
+      const newVisitor = {
         id: `vis-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
         full_name: String(body.full_name || 'Visitor').trim(),
         phone_number: String(body.phone_number || '').trim(),
@@ -189,9 +161,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // -------------------------------------------------------------
     // Route 4: GET /checkin-sessions/:token (Session Validation)
-    // -------------------------------------------------------------
     if (method === 'GET' && pathname.startsWith('/checkin-sessions/') && !pathname.includes('/recent') && !pathname.includes('/network-info')) {
       const token = pathname.replace('/checkin-sessions/', '').split('/')[0];
       return sendJson(200, {
@@ -208,9 +178,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // -------------------------------------------------------------
     // Route 5: POST /checkin-sessions (Generate QR Session)
-    // -------------------------------------------------------------
     if (method === 'POST' && pathname === '/checkin-sessions') {
       const token = `sess-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 6)}`;
       const host = req.headers.host || 'localhost';
@@ -232,9 +200,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // -------------------------------------------------------------
     // Route 6: GET /checkin-sessions/network-info
-    // -------------------------------------------------------------
     if (method === 'GET' && pathname === '/checkin-sessions/network-info') {
       const host = req.headers.host || 'localhost';
       const proto = req.headers['x-forwarded-proto'] || 'https';
@@ -247,9 +213,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // -------------------------------------------------------------
     // Route 7: GET /visitors/currently-in-office
-    // -------------------------------------------------------------
     if (method === 'GET' && pathname === '/visitors/currently-in-office') {
       const inOffice = globalVisitors
         .filter((v) => v.status === 'In Progress')
@@ -257,14 +221,12 @@ export default async function handler(req: any, res: any) {
       return sendJson(200, inOffice);
     }
 
-    // -------------------------------------------------------------
     // Route 8: POST /visitors/checkin (Manual Desk Check-In)
-    // -------------------------------------------------------------
     if (method === 'POST' && pathname === '/visitors/checkin') {
       const body = await parseBody(req);
       const staff = INITIAL_STAFF.find((s) => s.id === body.staff_to_see_id) || null;
 
-      const newVisitor: Visitor = {
+      const newVisitor = {
         id: `vis-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
         full_name: String(body.full_name || 'Visitor').trim(),
         phone_number: String(body.phone_number || '').trim(),
@@ -287,9 +249,7 @@ export default async function handler(req: any, res: any) {
       return sendJson(201, newVisitor);
     }
 
-    // -------------------------------------------------------------
     // Route 9: POST /visitors/:id/checkout
-    // -------------------------------------------------------------
     if (method === 'POST' && pathname.includes('/checkout')) {
       const parts = pathname.split('/');
       const id = parts[2];
@@ -304,16 +264,12 @@ export default async function handler(req: any, res: any) {
       return sendJson(404, { error: 'Visitor not found' });
     }
 
-    // -------------------------------------------------------------
     // Route 10: GET /staff
-    // -------------------------------------------------------------
     if (method === 'GET' && pathname === '/staff') {
       return sendJson(200, INITIAL_STAFF);
     }
 
-    // -------------------------------------------------------------
     // Route 11: GET /dashboard/stats
-    // -------------------------------------------------------------
     if (method === 'GET' && pathname === '/dashboard/stats') {
       const inOffice = globalVisitors.filter((v) => v.status === 'In Progress').length;
       const todayTotal = globalVisitors.length;
@@ -328,8 +284,8 @@ export default async function handler(req: any, res: any) {
 
     // Default 404 for unhandled API endpoints
     return sendJson(404, { error: `Endpoint not found: ${method} ${pathname}` });
-  } catch (err: any) {
+  } catch (err) {
     console.error('[Vercel Serverless API Error]:', err);
     return sendJson(500, { error: err.message || 'Internal Server Error' });
   }
-}
+};
