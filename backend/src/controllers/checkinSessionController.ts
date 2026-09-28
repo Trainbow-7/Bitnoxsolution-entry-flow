@@ -442,3 +442,58 @@ export async function getRecentCheckIns(req: Request, res: Response): Promise<vo
     res.status(500).json({ error: 'Failed to fetch recent self check-ins.' });
   }
 }
+
+/**
+ * POST /api/checkin-sessions/push-visitor
+ * Universal direct sync endpoint: Allows any phone/client to push a visitor record to backend SQLite
+ */
+export async function pushVisitorDirect(req: Request, res: Response): Promise<void> {
+  try {
+    const { visitor } = req.body;
+    if (!visitor || !visitor.full_name || !visitor.department) {
+      res.status(400).json({ error: 'Invalid visitor payload' });
+      return;
+    }
+
+    const existing = visitor.id ? await prisma.visitor.findUnique({ where: { id: visitor.id } }) : null;
+    let savedVisitor = existing;
+
+    if (!existing) {
+      const defaultUser = await prisma.user.findFirst({
+        where: { role: { in: ['Receptionist', 'Admin'] } },
+        select: { id: true },
+      });
+      const creatorUserId = defaultUser?.id || 'system';
+
+      savedVisitor = await prisma.visitor.create({
+        data: {
+          id: visitor.id || undefined,
+          full_name: visitor.full_name.trim(),
+          phone_number: (visitor.phone_number || '').trim(),
+          email: visitor.email ? visitor.email.trim() : null,
+          department: visitor.department,
+          purpose_of_visit: visitor.purpose_of_visit || 'General Inquiry',
+          staff_to_see_id: visitor.staff_to_see_id || null,
+          services_requested: visitor.services_requested ? visitor.services_requested.trim() : null,
+          expected_duration: visitor.expected_duration || '<15 min',
+          status: 'In Progress',
+          check_in_method: visitor.check_in_method || 'QR Self Check-In',
+          remarks: visitor.remarks ? visitor.remarks.trim() : null,
+          created_by_user_id: creatorUserId,
+          arrival_datetime: visitor.arrival_datetime ? new Date(visitor.arrival_datetime) : new Date(),
+        },
+        include: {
+          staff_to_see: true,
+        },
+      });
+    }
+
+    // Broadcast via SSE immediately
+    broadcastNewVisitor(savedVisitor);
+
+    res.json({ success: true, visitor: savedVisitor });
+  } catch (error) {
+    console.error('Error in pushVisitorDirect:', error);
+    res.status(500).json({ error: 'Failed to sync visitor record.' });
+  }
+}

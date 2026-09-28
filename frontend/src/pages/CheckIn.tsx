@@ -244,16 +244,36 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       // Browser will auto-reconnect SSE in background
     };
 
-    // 3. Fallback polling every 3.5 seconds to ensure 100% sync
+    // 3. In-window custom event listener
+    const handleCustom = (e: any) => {
+      const v = e.detail?.visitor;
+      if (v) handleNewArrival(v);
+    };
+    window.addEventListener('bitnox_new_visitor', handleCustom);
+
+    // 4. Cross-tab storage listener
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'bitnox_last_visitor' && e.newValue) {
+        try {
+          const v = JSON.parse(e.newValue);
+          if (v) handleNewArrival(v);
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 5. Fallback polling every 2 seconds to guarantee 100% sync
     const pollInterval = setInterval(() => {
       if (checkInMode === 'qr') {
         fetchRecentSelfCheckins();
       }
-    }, 3500);
+    }, 2000);
 
     return () => {
       unsubCloud();
       es.close();
+      window.removeEventListener('bitnox_new_visitor', handleCustom);
+      window.removeEventListener('storage', handleStorage);
       eventSourceRef.current = null;
       clearInterval(pollInterval);
     };

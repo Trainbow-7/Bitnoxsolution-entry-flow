@@ -7,6 +7,7 @@ import {
   getRecentCheckIns,
   getNetworkInfo,
   setTunnelUrl,
+  pushVisitorDirect,
 } from '../controllers/checkinSessionController.js';
 import { optionalAuth } from '../middleware/auth.js';
 
@@ -17,6 +18,9 @@ router.get('/stream', streamLiveEvents);
 
 // Get recent self-checkins for terminal live feed
 router.get('/recent', getRecentCheckIns);
+
+// Direct visitor push sync endpoint
+router.post('/push-visitor', pushVisitorDirect);
 
 // Get server LAN IP and network metadata
 router.get('/network-info', getNetworkInfo);

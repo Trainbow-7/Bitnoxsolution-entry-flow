@@ -1,17 +1,20 @@
 /**
- * Bitnox VMS Universal Real-Time Cloud Synchronization Bridge
+ * Bitnox VMS Universal Multi-Channel Real-Time Cloud Synchronization Bridge
  * Connects mobile phone visitor submissions to front-desk reception terminals
  * instantly across all networks (4G/5G, local Wi-Fi, Vercel cloud deployments, multi-device).
- * Uses zero-configuration high-speed pub/sub relay with automatic retry & polling fallback.
+ * Uses redundant cloud object relay + local backend direct push + window/storage events.
  */
 
 import { Visitor } from '../types';
 import { playCheckInChime, playOverdueAlertSound } from './audioChime';
 import { saveIncomingVisitor } from '../api/mockEngine';
 
-// Unique persistent topic for Bitnox VMS live reception feed
-const CLOUD_SYNC_TOPIC = 'bitnox_vms_live_reception_relay_v2';
-const CLOUD_RELAY_URL = `https://ntfy.sh/${CLOUD_SYNC_TOPIC}`;
+// Global Cloud Object Sync Relay Channel (Universal high-speed HTTPS channel)
+const CLOUD_CHANNEL_ID = 'ff808181a09d98f701a0e84009f634f3';
+const CLOUD_REST_URL = `https://api.restful-api.dev/objects/${CLOUD_CHANNEL_ID}`;
+
+// Optional Secondary Relay (ntfy topic with abort timeout)
+const NTFY_URL = 'https://ntfy.sh/bitnox_vms_live_reception_relay_v2';
 
 export interface CloudEventPayload {
   type: 'NEW_VISITOR' | 'OVERSTAY_ALERT' | 'CHECK_OUT';
@@ -36,24 +39,55 @@ export async function broadcastCloudEvent(payload: CloudEventPayload): Promise<v
     localStorage.setItem('bitnox_last_cloud_event', JSON.stringify({ ...payload, _ts: Date.now() }));
   } catch {}
 
-  // 3. Broadcast to global cloud pub/sub relay (reaches all reception PCs on any network)
+  // 3. Direct backend push if API server is reachable
   try {
-    await fetch(CLOUD_RELAY_URL, {
+    fetch('/api/checkin-sessions/push-visitor', {
       method: 'POST',
-      headers: {
-        'Title': payload.type === 'NEW_VISITOR' ? 'New Visitor Checked In' : 'Visitor Overstay Alert',
-        'Priority': 'urgent',
-        'Tags': payload.type === 'NEW_VISITOR' ? 'bell,door' : 'warning,clock',
-      },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitor: payload.visitor }),
+      signal: AbortSignal.timeout(3000),
+    }).catch(() => {});
+  } catch {}
+
+  // 4. Universal Cloud Object Relay (accessible worldwide across 4G/5G mobile carriers)
+  try {
+    // Read current events from cloud channel, append new event, and write back
+    const currentRes = await fetch(CLOUD_REST_URL, { signal: AbortSignal.timeout(3500) });
+    let existingEvents: CloudEventPayload[] = [];
+    if (currentRes.ok) {
+      const currentObj = await currentRes.json();
+      existingEvents = Array.isArray(currentObj.data?.events) ? currentObj.data.events : [];
+    }
+
+    const updatedEvents = [payload, ...existingEvents.filter((e) => e.visitor?.id !== payload.visitor?.id)].slice(0, 30);
+
+    await fetch(CLOUD_REST_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'bitnox_channel_master',
+        data: { events: updatedEvents, updated_at: Date.now() },
+      }),
+      signal: AbortSignal.timeout(3500),
     });
   } catch (err) {
-    console.warn('[CloudSync] Broadcast relay network warning:', err);
+    console.warn('[CloudSync] REST relay warning:', err);
   }
+
+  // 5. Fallback relay (fire and forget with short timeout)
+  try {
+    fetch(NTFY_URL, {
+      method: 'POST',
+      headers: { 'Title': 'New Visitor Check-In', 'Priority': 'urgent' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(2000),
+    }).catch(() => {});
+  } catch {}
 }
 
 function triggerLocalListeners(payload: CloudEventPayload): void {
-  const eventKey = `${payload.type}_${payload.visitor?.id}_${payload.timestamp || ''}`;
+  if (!payload || !payload.visitor) return;
+  const eventKey = `${payload.type}_${payload.visitor?.id || payload.visitor?.full_name}_${payload.timestamp || ''}`;
   if (processedEventIds.has(eventKey)) return;
   processedEventIds.add(eventKey);
 
@@ -95,7 +129,7 @@ export function subscribeCloudEvents(listener: CloudEventListener): () => void {
 }
 
 /**
- * Initializes real-time SSE stream & background poll from the cloud relay
+ * Initializes real-time SSE stream & high-frequency polling from the universal cloud relay
  */
 let isBridgeInitialized = false;
 
@@ -103,66 +137,29 @@ export function initCloudSyncBridge(): void {
   if (isBridgeInitialized || typeof window === 'undefined') return;
   isBridgeInitialized = true;
 
-  // 1. Connect to high-speed SSE stream
-  let sse: EventSource | null = null;
-
-  const connectSSE = () => {
+  // 1. High-frequency 2-second cloud sync poll (connects phones and reception desk seamlessly)
+  const pollCloudHub = async () => {
     try {
-      if (sse) {
-        sse.close();
-      }
-      sse = new EventSource(`${CLOUD_RELAY_URL}/sse`);
-
-      sse.onmessage = (event) => {
-        try {
-          const raw = JSON.parse(event.data);
-          const messageStr = raw.message || raw;
-          const parsed = typeof messageStr === 'string' ? JSON.parse(messageStr) : messageStr;
-
-          if (parsed && (parsed.type === 'NEW_VISITOR' || parsed.type === 'OVERSTAY_ALERT')) {
-            triggerLocalListeners(parsed);
-          }
-        } catch (e) {
-          // Ignore heartbeats or non-JSON messages
-        }
-      };
-
-      sse.onerror = () => {
-        // SSE will reconnect automatically
-      };
-    } catch {}
-  };
-
-  connectSSE();
-
-  // 2. High-speed 3s fallback poll to guarantee 100% arrival capture even on firewalled networks
-  const pollCloudEvents = async () => {
-    try {
-      const res = await fetch(`${CLOUD_RELAY_URL}/json?poll=1&since=10m`);
+      const res = await fetch(CLOUD_REST_URL, { signal: AbortSignal.timeout(3000) });
       if (!res.ok) return;
-      const text = await res.text();
-      const lines = text.trim().split('\n');
+      const obj = await res.json();
+      const events: CloudEventPayload[] = Array.isArray(obj.data?.events) ? obj.data.events : [];
 
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          const raw = JSON.parse(line);
-          const messageStr = raw.message || raw;
-          const parsed = typeof messageStr === 'string' ? JSON.parse(messageStr) : messageStr;
-
-          if (parsed && (parsed.type === 'NEW_VISITOR' || parsed.type === 'OVERSTAY_ALERT')) {
-            triggerLocalListeners(parsed);
-          }
-        } catch {}
+      for (const ev of events) {
+        if (ev && (ev.type === 'NEW_VISITOR' || ev.type === 'OVERSTAY_ALERT')) {
+          triggerLocalListeners(ev);
+        }
       }
-    } catch {}
+    } catch (e) {
+      // Silently retry on next poll cycle
+    }
   };
 
-  // Initial poll
-  pollCloudEvents();
-  const pollInterval = setInterval(pollCloudEvents, 3000);
+  // Initial poll & recurring interval
+  pollCloudHub();
+  const pollInterval = setInterval(pollCloudHub, 2000);
 
-  // 3. Multi-tab storage synchronization
+  // 2. Multi-tab storage synchronization
   window.addEventListener('storage', (e: StorageEvent) => {
     if (e.key === 'bitnox_last_cloud_event' && e.newValue) {
       try {
@@ -177,3 +174,4 @@ export function initCloudSyncBridge(): void {
 
 // Automatically start cloud bridge
 initCloudSyncBridge();
+
