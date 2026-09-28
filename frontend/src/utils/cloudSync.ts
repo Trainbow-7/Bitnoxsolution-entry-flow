@@ -7,6 +7,7 @@
 
 import { Visitor } from '../types';
 import { playCheckInChime, playOverdueAlertSound } from './audioChime';
+import { saveIncomingVisitor } from '../api/mockEngine';
 
 // Unique persistent topic for Bitnox VMS live reception feed
 const CLOUD_SYNC_TOPIC = 'bitnox_vms_live_reception_relay_v2';
@@ -55,6 +56,16 @@ function triggerLocalListeners(payload: CloudEventPayload): void {
   const eventKey = `${payload.type}_${payload.visitor?.id}_${payload.timestamp || ''}`;
   if (processedEventIds.has(eventKey)) return;
   processedEventIds.add(eventKey);
+
+  // Auto-persist new visitor into local store so all views have immediate access
+  if (payload.type === 'NEW_VISITOR' && payload.visitor) {
+    try {
+      saveIncomingVisitor(payload.visitor);
+      window.dispatchEvent(new CustomEvent('bitnox_new_visitor', { detail: { visitor: payload.visitor } }));
+    } catch (e) {
+      console.error('[CloudSync] Error saving incoming visitor:', e);
+    }
+  }
 
   // Keep set size reasonable
   if (processedEventIds.size > 200) {

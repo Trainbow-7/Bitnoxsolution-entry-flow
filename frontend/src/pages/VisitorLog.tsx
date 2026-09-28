@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 import { Department, PurposeOfVisit, Staff, Visitor, VisitorStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -48,8 +48,7 @@ export const VisitorLog: React.FC = () => {
   }, []);
 
   // Fetch visitors
-  useEffect(() => {
-    setLoading(true);
+  const loadVisitors = useCallback(() => {
     const params: Record<string, any> = {
       page,
       limit: 20,
@@ -71,6 +70,22 @@ export const VisitorLog: React.FC = () => {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [search, preset, department, status, purpose, staffId, page]);
+
+  useEffect(() => {
+    setLoading(true);
+    loadVisitors();
+
+    const handleRefresh = () => {
+      loadVisitors();
+    };
+
+    window.addEventListener('bitnox_new_visitor', handleRefresh);
+    window.addEventListener('storage', handleRefresh);
+    return () => {
+      window.removeEventListener('bitnox_new_visitor', handleRefresh);
+      window.removeEventListener('storage', handleRefresh);
+    };
+  }, [loadVisitors]);
 
   return (
     <div className="page-wrapper">

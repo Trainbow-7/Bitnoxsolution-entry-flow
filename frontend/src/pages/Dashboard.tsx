@@ -51,8 +51,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
 
   useEffect(() => {
     loadStats(true);
-    const interval = setInterval(() => loadStats(true), 30000); // 30s poll
-    return () => clearInterval(interval);
+
+    const handleRefresh = () => {
+      loadStats(true);
+    };
+
+    window.addEventListener('bitnox_new_visitor', handleRefresh);
+    window.addEventListener('storage', handleRefresh);
+    const interval = setInterval(() => loadStats(true), 15000); // 15s poll
+
+    return () => {
+      window.removeEventListener('bitnox_new_visitor', handleRefresh);
+      window.removeEventListener('storage', handleRefresh);
+      clearInterval(interval);
+    };
   }, []);
 
   if (loading || !stats) {

@@ -10,9 +10,9 @@
     "tunnel": "node tunnel.mjs",
     "start:backend": "cd backend && node dist/server.js",
     "seed": "cd backend && npm run prisma:seed",
-    "build": "cd frontend && npm install && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
     "build:frontend": "cd frontend && npm install && npm run build",
-    "build:backend": "cd backend && npm run build",
+    "build:backend": "cd backend && npm install && npx prisma generate && npm run build",
     "postinstall": "cd backend && npx prisma generate"
   },
   "dependencies": {
@@ -39,4 +39,3 @@
     "typescript": "^5.7.3"
   }
 }
-

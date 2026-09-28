@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/client';
 import { Visitor, Department } from '../types';
+import { subscribeCloudEvents } from '../utils/cloudSync';
 import {
   Broadcast,
   ArrowsClockwise,
@@ -13,6 +14,7 @@ import {
   Phone,
   WarningCircle,
   MagnifyingGlass,
+  Lightning,
 } from '@phosphor-icons/react';
 
 interface CurrentlyInOfficeProps {
@@ -26,6 +28,7 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
   const [selectedDept, setSelectedDept] = useState<Department | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [highlightedVisitorId, setHighlightedVisitorId] = useState<string | null>(null);
 
   // Checkout confirmation modal state
   const [checkingOutVisitor, setCheckingOutVisitor] = useState<Visitor | null>(null);
@@ -53,15 +56,89 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
     }
   }, [onCountChange]);
 
+  // Real-time synchronization with Cloud Relay, Server-Sent Events (SSE), and Window events
   useEffect(() => {
     fetchLiveVisitors();
+
+    const handleIncomingNewVisitor = (newVis: Visitor) => {
+      if (!newVis || !newVis.id) return;
+      // If status is in progress, immediately inject into live visitors view
+      if (newVis.status === 'In Progress' || !newVis.status) {
+        setVisitors((prev) => {
+          const exists = prev.some((v) => v.id === newVis.id);
+          if (exists) {
+            return prev.map((v) => (v.id === newVis.id ? { ...v, ...newVis } : v));
+          }
+          return [newVis, ...prev];
+        });
+        setHighlightedVisitorId(newVis.id);
+        setTimeout(() => {
+          setHighlightedVisitorId(null);
+        }, 9000);
+      }
+      // Silently re-verify with backend
+      fetchLiveVisitors(true);
+    };
+
+    // 1. Cloud Relay listener (catches phone 4G/5G mobile submissions worldwide)
+    const unsubCloud = subscribeCloudEvents((payload) => {
+      if (payload.type === 'NEW_VISITOR' && payload.visitor) {
+        handleIncomingNewVisitor(payload.visitor);
+      } else if (payload.type === 'CHECK_OUT' || payload.type === 'OVERSTAY_ALERT') {
+        fetchLiveVisitors(true);
+      }
+    });
+
+    // 2. Server-Sent Events stream from backend API
+    const es = api.checkinSessions.createEventSource();
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'NEW_VISITOR' && data.visitor) {
+          handleIncomingNewVisitor(data.visitor);
+        } else if (data.type === 'CHECK_OUT' || data.type === 'OVERSTAY_ALERT') {
+          fetchLiveVisitors(true);
+        }
+      } catch (err) {
+        console.error('Error in SSE CurrentlyInOffice:', err);
+      }
+    };
+
+    // 3. Custom Window Event listener (in-app check-ins)
+    const handleCustomEvent = (e: any) => {
+      const visitor = e.detail?.visitor;
+      if (visitor) {
+        handleIncomingNewVisitor(visitor);
+      }
+    };
+    window.addEventListener('bitnox_new_visitor', handleCustomEvent);
+
+    // 4. Storage event listener (multi-tab sync)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'bitnox_last_visitor' && e.newValue) {
+        try {
+          const vis = JSON.parse(e.newValue);
+          if (vis && vis.id) {
+            handleIncomingNewVisitor(vis);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 5. Polling interval (5s) for rock-solid consistency
     let interval: any = null;
     if (autoRefresh) {
       interval = setInterval(() => {
         fetchLiveVisitors(true);
-      }, 15000); // 15 seconds polling
+      }, 5000);
     }
+
     return () => {
+      unsubCloud();
+      es.close();
+      window.removeEventListener('bitnox_new_visitor', handleCustomEvent);
+      window.removeEventListener('storage', handleStorage);
       if (interval) clearInterval(interval);
     };
   }, [autoRefresh, fetchLiveVisitors]);
@@ -268,6 +345,8 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
             const arrivalTime = new Date(visitor.arrival_datetime);
             const isOverstayed = isVisitorOverstayed(visitor);
 
+            const isNew = highlightedVisitorId === visitor.id;
+
             return (
               <div
                 key={visitor.id}
@@ -278,8 +357,16 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                   justifyContent: 'space-between',
                   borderTop: isOverstayed
                     ? '4px solid #ef4444'
+                    : isNew
+                    ? '4px solid var(--bitnox-cyan)'
                     : `4px solid ${isTech ? 'var(--tech-indigo)' : 'var(--clean-teal)'}`,
-                  boxShadow: isOverstayed ? '0 0 15px rgba(239, 68, 68, 0.15)' : undefined,
+                  boxShadow: isOverstayed
+                    ? '0 0 15px rgba(239, 68, 68, 0.15)'
+                    : isNew
+                    ? '0 0 25px rgba(0, 210, 255, 0.35)'
+                    : undefined,
+                  transition: 'all 0.5s ease',
+                  background: isNew ? 'radial-gradient(ellipse at top, rgba(0, 210, 255, 0.08) 0%, var(--bg-surface) 80%)' : undefined,
                 }}
               >
                 <div>
@@ -287,7 +374,28 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.5rem' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{visitor.full_name}</h3>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: isNew ? 'var(--bitnox-cyan)' : undefined }}>
+                          {visitor.full_name}
+                        </h3>
+                        {isNew && (
+                          <span
+                            style={{
+                              background: 'var(--bitnox-cyan)',
+                              color: '#051326',
+                              padding: '2px 8px',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '0.68rem',
+                              fontWeight: 900,
+                              letterSpacing: '0.04em',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              boxShadow: '0 0 10px rgba(0, 210, 255, 0.5)',
+                            }}
+                          >
+                            <Lightning size={11} weight="fill" /> JUST ARRIVED
+                          </span>
+                        )}
                         {isOverstayed && (
                           <span
                             style={{

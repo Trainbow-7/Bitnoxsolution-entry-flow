@@ -355,6 +355,24 @@ class MockStorage {
 
 const storage = new MockStorage();
 
+export function saveIncomingVisitor(visitor: Visitor): void {
+  if (!visitor || !visitor.id) return;
+  const visitors = storage.getVisitors();
+  const staffList = storage.getStaff();
+  const staff = visitor.staff_to_see || (visitor.staff_to_see_id ? staffList.find((s) => s.id === visitor.staff_to_see_id) : null) || null;
+  const hydratedVisitor: Visitor = {
+    ...visitor,
+    staff_to_see: staff,
+  };
+  const existingIdx = visitors.findIndex((v) => v.id === visitor.id);
+  if (existingIdx !== -1) {
+    visitors[existingIdx] = { ...visitors[existingIdx], ...hydratedVisitor };
+  } else {
+    visitors.unshift(hydratedVisitor);
+  }
+  storage.setVisitors(visitors);
+}
+
 export const mockApi = {
   auth: {
     login: async (email: string, pass: string): Promise<AuthResponse> => {
