@@ -375,17 +375,7 @@ export async function submitSelfCheckIn(req: Request, res: Response): Promise<vo
     res.status(201).json({
       success: true,
       message: 'Check-in successful!',
-      visitor: {
-        id: visitor.id,
-        full_name: visitor.full_name,
-        arrival_datetime: visitor.arrival_datetime,
-        department: visitor.department,
-        purpose_of_visit: visitor.purpose_of_visit,
-        staff_to_see: visitor.staff_to_see?.name || null,
-        expected_duration: visitor.expected_duration,
-        check_in_method: visitor.check_in_method,
-        status: visitor.status,
-      },
+      visitor,
     });
   } catch (error) {
     console.error('Error processing self check-in:', error);

@@ -206,12 +206,19 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
   };
 
   const filtered = visitors.filter((v) => {
+    if (!v) return false;
     const matchesDept = selectedDept === 'All' || v.department === selectedDept;
+    const staffName =
+      typeof v.staff_to_see === 'object' && v.staff_to_see
+        ? v.staff_to_see.name
+        : typeof v.staff_to_see === 'string'
+        ? v.staff_to_see
+        : '';
     const matchesSearch =
       !searchQuery ||
-      v.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      v.phone_number.includes(searchQuery) ||
-      (v.staff_to_see?.name && v.staff_to_see.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      Boolean(v.full_name && v.full_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      Boolean(v.phone_number && String(v.phone_number).includes(searchQuery)) ||
+      Boolean(staffName && staffName.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesDept && matchesSearch;
   });
 
@@ -451,9 +458,13 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
                     <div>
                       <span style={{ color: 'var(--text-muted)' }}>Staff Assigned:</span>{' '}
                       <span style={{ color: visitor.staff_to_see ? 'var(--bitnox-cyan)' : 'var(--text-muted)', fontWeight: 600 }}>
-                        {visitor.staff_to_see ? visitor.staff_to_see.name : 'General Lobby'}
+                        {typeof visitor.staff_to_see === 'object' && visitor.staff_to_see
+                          ? visitor.staff_to_see.name
+                          : typeof visitor.staff_to_see === 'string' && visitor.staff_to_see
+                          ? visitor.staff_to_see
+                          : 'General Lobby'}
                       </span>
-                      {visitor.staff_to_see?.role_title && (
+                      {typeof visitor.staff_to_see === 'object' && visitor.staff_to_see?.role_title && (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: '0.3rem' }}>
                           ({visitor.staff_to_see.role_title})
                         </span>

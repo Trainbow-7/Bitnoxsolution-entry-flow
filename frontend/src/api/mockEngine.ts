@@ -359,9 +359,14 @@ export function saveIncomingVisitor(visitor: Visitor): void {
   if (!visitor || !visitor.id) return;
   const visitors = storage.getVisitors();
   const staffList = storage.getStaff();
-  const staff = visitor.staff_to_see || (visitor.staff_to_see_id ? staffList.find((s) => s.id === visitor.staff_to_see_id) : null) || null;
+  const staff =
+    (visitor.staff_to_see_id ? staffList.find((s) => s.id === visitor.staff_to_see_id) : null) ||
+    visitor.staff_to_see ||
+    null;
   const hydratedVisitor: Visitor = {
     ...visitor,
+    status: visitor.status || 'In Progress',
+    arrival_datetime: visitor.arrival_datetime || new Date().toISOString(),
     staff_to_see: staff,
   };
   const existingIdx = visitors.findIndex((v) => v.id === visitor.id);
@@ -426,7 +431,7 @@ export const mockApi = {
         .filter((v) => v.status === 'In Progress')
         .map((v) => ({
           ...v,
-          staff_to_see: staffList.find((s) => s.id === v.staff_to_see_id) || null,
+          staff_to_see: (v.staff_to_see_id && staffList.find((s) => s.id === v.staff_to_see_id)) || v.staff_to_see || null,
         }));
     },
 

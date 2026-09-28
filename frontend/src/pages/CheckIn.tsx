@@ -974,7 +974,11 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
                                 color: visitor.staff_to_see ? 'var(--bitnox-cyan)' : 'var(--text-muted)',
                               }}
                             >
-                              {visitor.staff_to_see?.name || 'General Reception'}
+                              {typeof visitor.staff_to_see === 'object' && visitor.staff_to_see
+                                ? visitor.staff_to_see.name
+                                : typeof visitor.staff_to_see === 'string' && visitor.staff_to_see
+                                ? visitor.staff_to_see
+                                : 'General Reception'}
                             </span>
                           </td>
                           <td>

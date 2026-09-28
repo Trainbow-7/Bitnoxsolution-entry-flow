@@ -139,16 +139,33 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
         remarks: remarks.trim() || undefined,
       });
 
-      setConfirmedData(res.visitor);
+      const staffObj = staffList.find((s) => s.id === staffToSeeId);
+      const completeVisitor = {
+        ...(typeof res.visitor === 'object' ? res.visitor : {}),
+        id: res.visitor?.id || `vis-mob-${Date.now()}`,
+        full_name: fullName.trim(),
+        phone_number: phoneNumber.trim(),
+        email: email.trim() || null,
+        department,
+        purpose_of_visit: purposeOfVisit,
+        staff_to_see_id: staffToSeeId || null,
+        staff_to_see: typeof res.visitor?.staff_to_see === 'object' && res.visitor.staff_to_see ? res.visitor.staff_to_see : staffObj || null,
+        services_requested: servicesRequested.trim() || null,
+        expected_duration: expectedDuration,
+        remarks: remarks.trim() || null,
+        status: 'In Progress',
+        check_in_method: 'QR Self Check-In',
+        arrival_datetime: res.visitor?.arrival_datetime || new Date().toISOString(),
+      };
+
+      setConfirmedData(completeVisitor);
 
       // Broadcast immediately to front-desk terminal across all cloud/local networks
-      if (res.visitor) {
-        broadcastCloudEvent({
-          type: 'NEW_VISITOR',
-          visitor: res.visitor,
-          timestamp: new Date().toISOString(),
-        }).catch(() => {});
-      }
+      broadcastCloudEvent({
+        type: 'NEW_VISITOR',
+        visitor: completeVisitor,
+        timestamp: new Date().toISOString(),
+      }).catch(() => {});
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
