@@ -81,6 +81,16 @@ export function triggerLocalListeners(payload: CloudEventPayload): void {
     } catch (e) {
       console.error('[CloudSync] Error saving incoming visitor:', e);
     }
+  } else if (payload.type === 'CHECK_OUT' && payload.visitor) {
+    try {
+      window.dispatchEvent(
+        new CustomEvent('bitnox_checkout_visitor', {
+          detail: { visitorId: payload.visitor.id, visitor: payload.visitor },
+        })
+      );
+    } catch (e) {
+      console.error('[CloudSync] Error dispatching checkout event:', e);
+    }
   }
 
   // Keep set size reasonable
@@ -124,7 +134,12 @@ export function initCloudSyncBridge(): void {
     if (e.key === 'bitnox_last_cloud_event' && e.newValue) {
       try {
         const payload = JSON.parse(e.newValue);
-        if (payload && (payload.type === 'NEW_VISITOR' || payload.type === 'OVERSTAY_ALERT')) {
+        if (
+          payload &&
+          (payload.type === 'NEW_VISITOR' ||
+            payload.type === 'OVERSTAY_ALERT' ||
+            payload.type === 'CHECK_OUT')
+        ) {
           triggerLocalListeners(payload);
         }
       } catch {}

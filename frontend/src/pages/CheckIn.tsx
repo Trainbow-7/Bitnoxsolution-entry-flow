@@ -2,12 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
 import { Department, ExpectedDuration, PurposeOfVisit, Staff, Visitor } from '../types';
 import { QRCodeView } from '../components/QRCodeView';
-import {
-  playCheckInChime,
-  isAudioEnabled,
-  setAudioEnabled,
-  subscribeAudioState,
-} from '../utils/audioChime';
+import { playCheckInChime } from '../utils/audioChime';
 import { subscribeCloudEvents, broadcastCloudEvent } from '../utils/cloudSync';
 import {
   Buildings,
@@ -23,8 +18,6 @@ import {
   ArrowRight,
   QrCode,
   DeviceMobile,
-  SpeakerHigh,
-  SpeakerSlash,
   ArrowSquareOut,
   ArrowsClockwise,
   Broadcast,
@@ -84,14 +77,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
   const [qrLoading, setQrLoading] = useState<boolean>(false);
   const [recentSelfCheckins, setRecentSelfCheckins] = useState<Visitor[]>([]);
   const [highlightedVisitorId, setHighlightedVisitorId] = useState<string | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => isAudioEnabled());
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
-
-  useEffect(() => {
-    return subscribeAudioState((enabled) => {
-      setSoundEnabled(enabled);
-    });
-  }, []);
 
   // Network Host and Public Tunnel Detection for reachable QR codes
   const [serverLanIp, setServerLanIp] = useState<string>('');
@@ -219,9 +205,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       if (!newVis || !newVis.id) return;
 
       // Sound alert chime
-      if (soundEnabled) {
-        playCheckInChime();
-      }
+      playCheckInChime();
 
       // Highlight newly arrived visitor
       setHighlightedVisitorId(newVis.id);
@@ -300,7 +284,7 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
       eventSourceRef.current = null;
       clearInterval(pollInterval);
     };
-  }, [checkInMode, soundEnabled, onSuccessCheckIn]);
+  }, [checkInMode, onSuccessCheckIn]);
 
   // Sync default purpose when department changes
   const handleDepartmentChange = (newDept: Department) => {
@@ -508,37 +492,6 @@ export const CheckIn: React.FC<CheckInProps> = ({ onSuccessCheckIn, onNavigateTo
               boxShadow: '0 15px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 210, 255, 0.1)',
             }}
           >
-            {/* Sound alert toggle & test buttons */}
-            <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', display: 'flex', gap: '0.4rem' }}>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => playCheckInChime(true)}
-                style={{
-                  gap: '0.35rem',
-                  fontSize: '0.75rem',
-                  padding: '4px 8px',
-                }}
-                title="Test front-desk chime sound"
-              >
-                <span>🔔 Test Chime</span>
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => setAudioEnabled(!soundEnabled)}
-                style={{
-                  gap: '0.4rem',
-                  fontSize: '0.78rem',
-                  borderColor: soundEnabled ? 'var(--bitnox-cyan-border)' : 'var(--border-subtle)',
-                  color: soundEnabled ? 'var(--bitnox-cyan)' : 'var(--text-muted)',
-                }}
-                title="Toggle front-desk audio chime on new check-in"
-              >
-                {soundEnabled ? <SpeakerHigh size={15} weight="bold" /> : <SpeakerSlash size={15} weight="bold" />}
-                <span>{soundEnabled ? 'Chime On' : 'Chime Off'}</span>
-              </button>
-            </div>
 
             {/* Kiosk Instructions */}
             <div style={{ maxWidth: '520px', marginBottom: '1.75rem' }}>

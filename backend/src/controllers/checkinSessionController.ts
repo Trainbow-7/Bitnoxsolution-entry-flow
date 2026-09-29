@@ -81,6 +81,17 @@ export function broadcastOverstayAlert(alertData: any) {
   }
 }
 
+export function broadcastCheckout(visitor: any) {
+  const payload = `data: ${JSON.stringify({ type: 'CHECK_OUT', visitor })}\n\n`;
+  for (const client of sseClients) {
+    try {
+      client.write(payload);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
+
 let activePublicTunnelUrl: string | null = null;
 
 /**

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/client';
 import { Visitor, Department } from '../types';
-import { subscribeCloudEvents } from '../utils/cloudSync';
+import { subscribeCloudEvents, broadcastCloudEvent } from '../utils/cloudSync';
 import {
   Broadcast,
   ArrowsClockwise,
@@ -46,33 +46,17 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
     if (!isSilent) setRefreshing(true);
     try {
       const data = await api.visitors.getCurrentlyInOffice();
-      setVisitors((prev) => {
-        if (!Array.isArray(data)) return prev;
-        const map = new Map<string, Visitor>();
-        // Add existing in-progress visitors from state
-        prev.forEach((v) => {
-          if (v && v.id && v.status === 'In Progress') {
-            map.set(v.id, v);
-          }
-        });
-        // Merge or update with backend data
-        data.forEach((v) => {
-          if (v && v.id) {
-            const existing = map.get(v.id);
-            map.set(v.id, existing ? { ...existing, ...v } : v);
-          }
-        });
-        // Sort by arrival_datetime descending
-        const merged = Array.from(map.values())
-          .filter((v) => v.status === 'In Progress')
+      if (Array.isArray(data)) {
+        const activeList = data
+          .filter((v) => v && v.id && v.status === 'In Progress')
           .sort((a, b) => {
             const tA = new Date(a.arrival_datetime || 0).getTime();
             const tB = new Date(b.arrival_datetime || 0).getTime();
             return tB - tA;
           });
-        if (onCountChange) onCountChange(merged.length);
-        return merged;
-      });
+        setVisitors(activeList);
+        if (onCountChange) onCountChange(activeList.length);
+      }
     } catch (err: any) {
       console.error('Failed to load live visitors:', err);
     } finally {
@@ -102,11 +86,25 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
       }
     };
 
-    // 1. Cloud Relay listener (catches phone 4G/5G mobile submissions worldwide)
+    const handleIncomingCheckout = (visitorId: string) => {
+      if (!visitorId) return;
+      setVisitors((prev) => {
+        const next = prev.filter((v) => v.id !== visitorId);
+        if (onCountChange) onCountChange(next.length);
+        return next;
+      });
+    };
+
+    // 1. Cloud Relay listener (catches phone 4G/5G mobile submissions & checkouts)
     const unsubCloud = subscribeCloudEvents((payload) => {
       if (payload.type === 'NEW_VISITOR' && payload.visitor) {
         handleIncomingNewVisitor(payload.visitor);
-      } else if (payload.type === 'CHECK_OUT' || payload.type === 'OVERSTAY_ALERT') {
+      } else if (payload.type === 'CHECK_OUT') {
+        if (payload.visitor?.id) {
+          handleIncomingCheckout(payload.visitor.id);
+        }
+        fetchLiveVisitors(true);
+      } else if (payload.type === 'OVERSTAY_ALERT') {
         fetchLiveVisitors(true);
       }
     });
@@ -118,7 +116,12 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
         const data = JSON.parse(event.data);
         if (data.type === 'NEW_VISITOR' && data.visitor) {
           handleIncomingNewVisitor(data.visitor);
-        } else if (data.type === 'CHECK_OUT' || data.type === 'OVERSTAY_ALERT') {
+        } else if (data.type === 'CHECK_OUT') {
+          if (data.visitor?.id) {
+            handleIncomingCheckout(data.visitor.id);
+          }
+          fetchLiveVisitors(true);
+        } else if (data.type === 'OVERSTAY_ALERT') {
           fetchLiveVisitors(true);
         }
       } catch (err) {
@@ -135,6 +138,15 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
     };
     window.addEventListener('bitnox_new_visitor', handleCustomEvent);
 
+    // Custom Checkout Window Event listener
+    const handleCustomCheckout = (e: any) => {
+      const visitorId = e.detail?.visitorId;
+      if (visitorId) {
+        handleIncomingCheckout(visitorId);
+      }
+    };
+    window.addEventListener('bitnox_checkout_visitor', handleCustomCheckout);
+
     // 4. Storage event listener (multi-tab sync)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'bitnox_last_visitor' && e.newValue) {
@@ -148,22 +160,23 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
     };
     window.addEventListener('storage', handleStorage);
 
-    // 5. Polling interval (5s) for rock-solid consistency
+    // 5. Polling interval (4s) for rock-solid consistency
     let interval: any = null;
     if (autoRefresh) {
       interval = setInterval(() => {
         fetchLiveVisitors(true);
-      }, 5000);
+      }, 4000);
     }
 
     return () => {
       unsubCloud();
       es.close();
       window.removeEventListener('bitnox_new_visitor', handleCustomEvent);
+      window.removeEventListener('bitnox_checkout_visitor', handleCustomCheckout);
       window.removeEventListener('storage', handleStorage);
       if (interval) clearInterval(interval);
     };
-  }, [autoRefresh, fetchLiveVisitors]);
+  }, [autoRefresh, fetchLiveVisitors, onCountChange]);
 
   // Calculate elapsed time formatted
   const getElapsedString = (arrivalDatetime: string) => {
@@ -191,18 +204,45 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
 
   const handleConfirmCheckout = async () => {
     if (!checkingOutVisitor) return;
+    const checkoutId = checkingOutVisitor.id;
+    const checkoutVisitorObj = {
+      ...checkingOutVisitor,
+      status: 'Completed' as const,
+      checkout_datetime: new Date().toISOString(),
+    };
+
+    // Immediately remove checked out visitor from view and decrease active counter instantly
+    setVisitors((prev) => {
+      const next = prev.filter((v) => v.id !== checkoutId);
+      if (onCountChange) onCountChange(next.length);
+      return next;
+    });
+
     setActionLoading(true);
     try {
-      const res = await api.visitors.checkOut(checkingOutVisitor.id, checkoutRemarks);
+      const res = await api.visitors.checkOut(checkoutId, checkoutRemarks);
+
+      // Broadcast checkout event across tabs and networks
+      try {
+        broadcastCloudEvent({
+          type: 'CHECK_OUT',
+          visitor: res.visitor || checkoutVisitorObj,
+        }).catch(() => {});
+        window.dispatchEvent(
+          new CustomEvent('bitnox_checkout_visitor', { detail: { visitorId: checkoutId } })
+        );
+      } catch {}
+
       setAlertBanner({
         type: 'success',
         text: `Checked out ${checkingOutVisitor.full_name}. Total time on premises: ${res.duration_minutes} minutes.`,
       });
       setCheckingOutVisitor(null);
       setCheckoutRemarks('');
-      await fetchLiveVisitors();
+      await fetchLiveVisitors(true);
     } catch (err: any) {
       setAlertBanner({ type: 'error', text: err.message || 'Failed to check out visitor.' });
+      await fetchLiveVisitors(true);
     } finally {
       setActionLoading(false);
     }
@@ -210,18 +250,45 @@ export const CurrentlyInOffice: React.FC<CurrentlyInOfficeProps> = ({ onCountCha
 
   const handleConfirmCancel = async () => {
     if (!cancellingVisitor) return;
+    const cancelId = cancellingVisitor.id;
+    const cancelVisitorObj = {
+      ...cancellingVisitor,
+      status: 'Cancelled' as const,
+      checkout_datetime: new Date().toISOString(),
+    };
+
+    // Immediately remove cancelled visitor from view and decrease active counter instantly
+    setVisitors((prev) => {
+      const next = prev.filter((v) => v.id !== cancelId);
+      if (onCountChange) onCountChange(next.length);
+      return next;
+    });
+
     setActionLoading(true);
     try {
-      await api.visitors.cancel(cancellingVisitor.id, cancellationReason);
+      await api.visitors.cancel(cancelId, cancellationReason);
+
+      // Broadcast cancellation event across tabs and networks
+      try {
+        broadcastCloudEvent({
+          type: 'CHECK_OUT',
+          visitor: cancelVisitorObj,
+        }).catch(() => {});
+        window.dispatchEvent(
+          new CustomEvent('bitnox_checkout_visitor', { detail: { visitorId: cancelId } })
+        );
+      } catch {}
+
       setAlertBanner({
         type: 'success',
         text: `Visit cancelled for ${cancellingVisitor.full_name}.`,
       });
       setCancellingVisitor(null);
       setCancellationReason('');
-      await fetchLiveVisitors();
+      await fetchLiveVisitors(true);
     } catch (err: any) {
       setAlertBanner({ type: 'error', text: err.message || 'Failed to cancel visitor.' });
+      await fetchLiveVisitors(true);
     } finally {
       setActionLoading(false);
     }

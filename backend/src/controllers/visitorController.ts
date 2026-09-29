@@ -3,7 +3,7 @@ import { prisma } from '../prisma.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { logAudit } from '../utils/audit.js';
 import { getActiveOverstayedVisitors } from '../services/overstayService.js';
-import { broadcastNewVisitor } from './checkinSessionController.js';
+import { broadcastNewVisitor, broadcastCheckout } from './checkinSessionController.js';
 
 export async function checkInVisitor(req: AuthRequest, res: Response): Promise<void> {
   try {
@@ -132,6 +132,9 @@ export async function checkOutVisitor(req: AuthRequest, res: Response): Promise<
       },
     });
 
+    // Broadcast checkout event via SSE to all reception kiosks & dashboard screens
+    broadcastCheckout(updated);
+
     res.json({
       visitor: updated,
       duration_minutes: durationMinutes,
@@ -197,6 +200,9 @@ export async function cancelVisitor(req: AuthRequest, res: Response): Promise<vo
         reason: remarks || 'No reason specified',
       },
     });
+
+    // Broadcast cancellation event via SSE to all reception kiosks & dashboard screens
+    broadcastCheckout(updated);
 
     res.json({
       visitor: updated,
