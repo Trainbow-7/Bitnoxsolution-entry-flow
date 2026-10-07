@@ -4,12 +4,16 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 
-// Setup database URL for Vercel / serverless environment
-if (process.env.VERCEL || !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('./dev.db')) {
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Setup database URL for local and Vercel environments
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'file:./dev.db';
+}
+if (process.env.VERCEL) {
   const tmpDbPath = path.join(os.tmpdir(), 'bitnox_dev.db').replace(/\\/g, '/');
-  if (process.env.VERCEL) {
-    process.env.DATABASE_URL = `file:${tmpDbPath}`;
-  }
+  process.env.DATABASE_URL = `file:${tmpDbPath}`;
 }
 
 export const prisma = new PrismaClient();
