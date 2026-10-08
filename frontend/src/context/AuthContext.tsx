@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { api } from '../api/client';
 
@@ -25,24 +25,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (token) {
-      api.auth
-        .me()
-        .then((res) => {
-          setUser(res.user);
-        })
-        .catch(() => {
+    let isMounted = true;
+    const initAuth = async () => {
+      // 1. If token stored, attempt restore
+      if (token) {
+        try {
+          const res = await api.auth.me();
+          if (res?.user && isMounted) {
+            setUser(res.user);
+            setLoading(false);
+            return;
+          }
+        } catch {
           localStorage.removeItem('bitnox_token');
-          setToken(null);
+          if (isMounted) setToken(null);
+        }
+      }
+
+      // 2. If user explicitly clicked logout in this tab, show login page
+      const isExplicitLogout = sessionStorage.getItem('bitnox_explicit_logout') === 'true';
+      if (isExplicitLogout) {
+        if (isMounted) {
           setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+          setLoading(false);
+        }
+        return;
+      }
+
+      // 3. Auto-initialize demo session as Receptionist (or Admin if requested via URL)
+      // This ensures portfolio live demo opens the actual working VMS interface directly!
+      try {
+        const isDashboard = window.location.hash.includes('dashboard') || window.location.search.includes('admin');
+        const defaultRole = isDashboard ? 'Admin' : 'Receptionist';
+        const guestUser = await quickLogin(defaultRole);
+        if (isMounted) setUser(guestUser);
+      } catch (err) {
+        console.error('Failed to auto-login demo role:', err);
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    initAuth();
+    return () => { isMounted = false; };
   }, [token]);
 
   const login = async (email: string, password: string): Promise<User> => {
+    sessionStorage.removeItem('bitnox_explicit_logout');
     const res = await api.auth.login(email, password);
     localStorage.setItem('bitnox_token', res.token);
     setToken(res.token);
@@ -53,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const quickLogin = async (
     demoRole: 'Admin' | 'Receptionist' | 'Staff-Alex' | 'Staff-Ben' | 'Staff-Usman' | 'Staff-Elena'
   ): Promise<User> => {
+    sessionStorage.removeItem('bitnox_explicit_logout');
     let email = 'admin@bitnox.com';
     let password = 'admin123';
 
@@ -79,6 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    sessionStorage.setItem('bitnox_explicit_logout', 'true');
     localStorage.removeItem('bitnox_token');
     setToken(null);
     setUser(null);

@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
   };
 
   // Only appear on the admin dashboard, completely hidden from other roles/departments
-  const showRoleSwitcher = Boolean(isAdmin && currentTab === 'dashboard');
+  const showRoleSwitcher = true;
 
   return (
     <header className="topbar">
