@@ -76,20 +76,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
     );
   }
 
+  // Safe defaults to ensure robustness against partial server responses
+  const safeStats: DashboardStats = {
+    today_total: stats.today_total ?? (stats as any).total_visitors_today ?? 0,
+    currently_in_office: stats.currently_in_office ?? 0,
+    today_completed: stats.today_completed ?? 0,
+    today_cancelled: stats.today_cancelled ?? 0,
+    visits_per_day: Array.isArray(stats.visits_per_day) ? stats.visits_per_day : [],
+    by_purpose: Array.isArray(stats.by_purpose) ? stats.by_purpose : [],
+    by_department: Array.isArray(stats.by_department) && stats.by_department.length > 0 ? stats.by_department : [
+      { department: 'Tech Institute', count: (stats as any).tech_institute_visitors_today || 0 },
+      { department: 'Dry Cleaning', count: (stats as any).dry_cleaning_visitors_today || 0 },
+    ],
+    peak_hours: Array.isArray(stats.peak_hours) ? stats.peak_hours : [],
+    staff_workload: Array.isArray(stats.staff_workload) ? stats.staff_workload : [],
+  };
+
   // Purpose data format for donut
-  const purposeDonutData = stats.by_purpose.map((item) => ({
+  const purposeDonutData = safeStats.by_purpose.map((item) => ({
     label: item.purpose,
     count: item.count,
   }));
 
   // Department data format for donut
-  const deptDonutData = stats.by_department.map((item) => ({
+  const deptDonutData = safeStats.by_department.map((item) => ({
     label: item.department,
     count: item.count,
     color: item.department === 'Tech Institute' ? '#00d2ff' : '#14b8a6',
   }));
 
-  const totalHandledStaff = stats.staff_workload.reduce((sum, s) => sum + s.count, 0);
+  const totalHandledStaff = safeStats.staff_workload.reduce((sum, s) => sum + (s.count || 0), 0);
 
   return (
     <div className="page-wrapper">
@@ -193,7 +209,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
         <div className="stat-card tech">
           <div className="stat-info">
             <div className="stat-label">Total Visits Today</div>
-            <div className="stat-value">{stats.today_total}</div>
+            <div className="stat-value">{safeStats.today_total}</div>
             <div className="stat-sub">Across both departments</div>
           </div>
           <div className="stat-icon tech">
@@ -205,7 +221,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="stat-info">
             <div className="stat-label">Currently In Office</div>
             <div className="stat-value" style={{ color: '#fbbf24' }}>
-              {stats.currently_in_office}
+              {safeStats.currently_in_office}
             </div>
             <div className="stat-sub" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <span className="pulse-dot amber" />
@@ -221,7 +237,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="stat-info">
             <div className="stat-label">Completed Today</div>
             <div className="stat-value" style={{ color: '#34d399' }}>
-              {stats.today_completed}
+              {safeStats.today_completed}
             </div>
             <div className="stat-sub">Checked out successfully</div>
           </div>
@@ -234,7 +250,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
           <div className="stat-info">
             <div className="stat-label">Cancelled Today</div>
             <div className="stat-value" style={{ color: '#f87171' }}>
-              {stats.today_cancelled}
+              {safeStats.today_cancelled}
             </div>
             <div className="stat-sub">Departed without service</div>
           </div>
@@ -259,7 +275,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
               </div>
             </div>
           </div>
-          <TrendChart data={stats.visits_per_day} />
+          <TrendChart data={safeStats.visits_per_day} />
         </div>
 
         {/* Department Split Donut */}
@@ -304,7 +320,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
               <div className="card-subtitle">Hourly traffic density (8:00 AM – 7:00 PM)</div>
             </div>
           </div>
-          <PeakHoursChart data={stats.peak_hours} />
+          <PeakHoursChart data={safeStats.peak_hours} />
         </div>
       </div>
 
@@ -334,7 +350,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
               </tr>
             </thead>
             <tbody>
-              {stats.staff_workload.map((staff) => {
+              {safeStats.staff_workload.map((staff) => {
                 const percent =
                   totalHandledStaff > 0
                     ? Math.round((staff.count / totalHandledStaff) * 100)

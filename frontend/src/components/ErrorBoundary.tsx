@@ -23,6 +23,12 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('Bitnox VMS ErrorBoundary caught error:', error, errorInfo);
   }
 
+  private handleGoToDashboard = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.hash = '#dashboard';
+    window.location.reload();
+  };
+
   private handleReset = () => {
     try {
       localStorage.clear();
@@ -76,27 +82,45 @@ export class ErrorBoundary extends Component<Props, State> {
               B
             </div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>
-              Bitnox VMS Terminal
+              Bitnox VMS
             </h2>
             <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
-              Click below to launch the live Receptionist Check-In terminal.
+              An unexpected display issue occurred. You can return directly to the Executive Dashboard or reload the platform.
             </p>
-            <button
-              onClick={this.handleReset}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #00D2FF 0%, #0072FF 100%)',
-                color: '#fff',
-                border: 'none',
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                cursor: 'pointer',
-              }}
-            >
-              Open Receptionist Terminal
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <button
+                onClick={this.handleGoToDashboard}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #00D2FF 0%, #0072FF 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Go to Executive Dashboard
+              </button>
+              <button
+                onClick={this.handleReset}
+                style={{
+                  width: '100%',
+                  padding: '0.65rem 1.5rem',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  color: '#94a3b8',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  fontWeight: 500,
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Reset Session & Return to Login
+              </button>
+            </div>
           </div>
         </div>
       );

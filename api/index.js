@@ -649,13 +649,91 @@ module.exports = async function handler(req, res) {
 
     // Route 11: GET /dashboard/stats
     if (method === 'GET' && pathname === '/dashboard/stats') {
-      const inOffice = globalVisitors.filter((v) => v.status === 'In Progress').length;
-      const todayTotal = globalVisitors.length;
+      const now = new Date();
+      const todayStr = now.toDateString();
+
+      const todayVisitors = globalVisitors.filter(
+        (v) => new Date(v.arrival_datetime).toDateString() === todayStr
+      );
+      const currently_in_office = globalVisitors.filter((v) => v.status === 'In Progress').length;
+      const today_completed = todayVisitors.filter((v) => v.status === 'Completed').length;
+      const today_cancelled = todayVisitors.filter((v) => v.status === 'Cancelled').length;
+
+      const hourCounts = {};
+      for (let h = 8; h <= 18; h++) hourCounts[h] = 0;
+      globalVisitors.forEach((v) => {
+        const hour = new Date(v.arrival_datetime).getHours();
+        if (hourCounts[hour] !== undefined) hourCounts[hour]++;
+      });
+
+      const peak_hours = Object.entries(hourCounts).map(([h, count]) => {
+        const hourNum = Number(h);
+        const ampm = hourNum >= 12 ? 'PM' : 'AM';
+        const displayH = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
+        return { hour: hourNum, label: `${displayH} ${ampm}`, count };
+      });
+
+      const purposeMap = {};
+      globalVisitors.forEach((v) => {
+        purposeMap[v.purpose_of_visit] = (purposeMap[v.purpose_of_visit] || 0) + 1;
+      });
+      const by_purpose = Object.entries(purposeMap).map(([purpose, count]) => ({
+        purpose,
+        count,
+      }));
+
+      const techCount = globalVisitors.filter((v) => v.department === 'Tech Institute').length;
+      const dryCleanCount = globalVisitors.filter((v) => v.department === 'Dry Cleaning').length;
+      const by_department = [
+        { department: 'Tech Institute', count: techCount },
+        { department: 'Dry Cleaning', count: dryCleanCount },
+      ];
+
+      const staff_workload = INITIAL_STAFF.map((s) => ({
+        staff_id: s.id,
+        staff_name: s.name,
+        department: s.department,
+        role_title: s.role_title || '',
+        count: globalVisitors.filter((v) => v.staff_to_see_id === s.id).length,
+      }));
+
+      const dateMap = {};
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 24 * 3600 * 1000).toISOString().split('T')[0];
+        dateMap[d] = { tech: 0, clean: 0 };
+      }
+      globalVisitors.forEach((v) => {
+        const d = new Date(v.arrival_datetime).toISOString().split('T')[0];
+        if (!dateMap[d]) dateMap[d] = { tech: 0, clean: 0 };
+        if (v.department === 'Tech Institute') dateMap[d].tech++;
+        else dateMap[d].clean++;
+      });
+
+      const visits_per_day = Object.entries(dateMap)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .slice(-14)
+        .map(([date, counts]) => ({
+          date,
+          count: counts.tech + counts.clean,
+          tech_institute: counts.tech,
+          dry_cleaning: counts.clean,
+        }));
+
+      const todayTotal = todayVisitors.length || globalVisitors.length;
+
       return sendJson(200, {
+        today_total: todayTotal,
+        currently_in_office,
+        today_completed,
+        today_cancelled,
+        visits_per_day,
+        by_purpose,
+        by_department,
+        peak_hours,
+        staff_workload,
         total_visitors_today: todayTotal,
-        currently_in_office: inOffice,
-        tech_institute_visitors_today: globalVisitors.filter((v) => v.department === 'Tech Institute').length,
-        dry_cleaning_visitors_today: globalVisitors.filter((v) => v.department === 'Dry Cleaning').length,
+        tech_institute_visitors_today: techCount,
+        dry_cleaning_visitors_today: dryCleanCount,
         average_visit_duration_minutes: 24,
       });
     }
