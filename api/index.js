@@ -82,6 +82,78 @@ module.exports = async function handler(req, res) {
   };
 
   try {
+    // Route 0a: POST /auth/login (Instant serverless auth for live demo)
+    if (method === 'POST' && pathname === '/auth/login') {
+      const body = await parseBody(req);
+      const email = String(body.email || '').toLowerCase().trim();
+      let user = null;
+      if (email.includes('admin')) {
+        user = {
+          id: 'usr-admin',
+          name: 'Engr Oluwafemi Faleye',
+          email: 'admin@bitnox.com',
+          role: 'Admin',
+          linked_staff_id: 'staff-femi',
+          linked_staff: INITIAL_STAFF[0],
+        };
+      } else if (email.includes('recep')) {
+        user = {
+          id: 'usr-recep',
+          name: 'Kikelomo Oluwanishola',
+          email: 'receptionist@bitnox.com',
+          role: 'Receptionist',
+          linked_staff_id: null,
+          linked_staff: null,
+        };
+      } else {
+        user = {
+          id: 'usr-ben',
+          name: 'Mr. Ben Sam',
+          email: 'ben.sam@bitnox.com',
+          role: 'Staff',
+          linked_staff_id: 'staff-ben',
+          linked_staff: INITIAL_STAFF[1],
+        };
+      }
+      return sendJson(200, {
+        token: `jwt-demo-${user.id}-${Date.now()}`,
+        user,
+      });
+    }
+
+    // Route 0b: GET /auth/me
+    if (method === 'GET' && pathname === '/auth/me') {
+      const authHeader = String(req.headers.authorization || '').toLowerCase();
+      let user = {
+        id: 'usr-recep',
+        name: 'Kikelomo Oluwanishola',
+        email: 'receptionist@bitnox.com',
+        role: 'Receptionist',
+        linked_staff_id: null,
+        linked_staff: null,
+      };
+      if (authHeader.includes('admin')) {
+        user = {
+          id: 'usr-admin',
+          name: 'Engr Oluwafemi Faleye',
+          email: 'admin@bitnox.com',
+          role: 'Admin',
+          linked_staff_id: 'staff-femi',
+          linked_staff: INITIAL_STAFF[0],
+        };
+      } else if (authHeader.includes('ben') || authHeader.includes('staff')) {
+        user = {
+          id: 'usr-ben',
+          name: 'Mr. Ben Sam',
+          email: 'ben.sam@bitnox.com',
+          role: 'Staff',
+          linked_staff_id: 'staff-ben',
+          linked_staff: INITIAL_STAFF[1],
+        };
+      }
+      return sendJson(200, { user });
+    }
+
     // Route 1: GET /checkin-sessions/recent (Live Feed)
     if (method === 'GET' && pathname === '/checkin-sessions/recent') {
       const recent = [...globalVisitors]

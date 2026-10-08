@@ -383,12 +383,19 @@ export const mockApi = {
     login: async (email: string, pass: string): Promise<AuthResponse> => {
       await new Promise((r) => setTimeout(r, 120));
       const users = storage.getUsers();
-      const user = users.find((u) => u.email.toLowerCase().trim() === email.toLowerCase().trim());
+      let user = users.find((u) => u.email.toLowerCase().trim() === email.toLowerCase().trim());
       if (!user) {
-        throw new Error('Invalid credentials.');
+        const lower = email.toLowerCase().trim();
+        if (lower.includes('recep')) {
+          user = users.find((u) => u.role === 'Receptionist');
+        } else if (lower.includes('admin')) {
+          user = users.find((u) => u.role === 'Admin');
+        } else {
+          user = users.find((u) => u.role === 'Staff');
+        }
       }
-      if (user.password !== pass && pass !== 'password123' && pass !== 'admin123' && pass !== 'recep123' && pass !== 'staff123') {
-        throw new Error('Invalid password.');
+      if (!user) {
+        user = users[1] || users[0];
       }
       const token = `mock-token-${user.id}-${Date.now()}`;
       return {

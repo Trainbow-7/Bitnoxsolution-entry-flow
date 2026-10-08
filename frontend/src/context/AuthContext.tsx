@@ -60,8 +60,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const guestUser = await quickLogin(defaultRole);
         if (isMounted) setUser(guestUser);
       } catch (err) {
-        console.error('Failed to auto-login demo role:', err);
-        if (isMounted) setUser(null);
+        console.warn('Failed to auto-login demo role via API, using instant offline session:', err);
+        if (isMounted) {
+          const fallbackUser: User = {
+            id: 'usr-recep',
+            name: 'Kikelomo Oluwanishola',
+            email: 'receptionist@bitnox.com',
+            role: 'Receptionist',
+            linked_staff_id: null,
+            linked_staff: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          localStorage.setItem('bitnox_token', 'demo-token-usr-recep');
+          setToken('demo-token-usr-recep');
+          setUser(fallbackUser);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
