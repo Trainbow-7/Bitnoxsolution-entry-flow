@@ -127,19 +127,43 @@ export const MobileSelfCheckIn: React.FC<MobileSelfCheckInProps> = ({ token }) =
     setSubmitting(true);
 
     try {
+      // Intelligent auto-routing: route students and visitors to correct host if not manually selected
+      let finalStaffId = staffToSeeId;
+      if (!finalStaffId) {
+        const combined = `${purposeOfVisit} ${servicesRequested} ${remarks}`.toLowerCase();
+        if (department === 'Tech Institute') {
+          if (combined.includes('ai') || combined.includes('ml') || combined.includes('lecture') || combined.includes('ben')) {
+            const ben = staffList.find((s) => s.name.toLowerCase().includes('ben'));
+            if (ben) finalStaffId = ben.id;
+          } else if (combined.includes('data') || combined.includes('analytics') || combined.includes('usman')) {
+            const usman = staffList.find((s) => s.name.toLowerCase().includes('usman'));
+            if (usman) finalStaffId = usman.id;
+          } else if (combined.includes('web') || combined.includes('sarah')) {
+            const sarah = staffList.find((s) => s.name.toLowerCase().includes('sarah'));
+            if (sarah) finalStaffId = sarah.id;
+          } else if (purposeOfVisit === 'Existing Trainee' || purposeOfVisit === 'Prospective Student') {
+            const ben = staffList.find((s) => s.name.toLowerCase().includes('ben'));
+            if (ben) finalStaffId = ben.id;
+          }
+        } else {
+          const elena = staffList.find((s) => s.name.toLowerCase().includes('elena'));
+          if (elena) finalStaffId = elena.id;
+        }
+      }
+
       const res = await api.checkinSessions.submitSelfCheckIn(token, {
         full_name: fullName.trim(),
         phone_number: phoneNumber.trim(),
         email: email.trim() || undefined,
         department,
         purpose_of_visit: purposeOfVisit,
-        staff_to_see_id: staffToSeeId || undefined,
+        staff_to_see_id: finalStaffId || undefined,
         services_requested: servicesRequested.trim() || undefined,
         expected_duration: expectedDuration,
         remarks: remarks.trim() || undefined,
       });
 
-      const staffObj = staffList.find((s) => s.id === staffToSeeId);
+      const staffObj = staffList.find((s) => s.id === (finalStaffId || staffToSeeId));
       const completeVisitor = {
         ...(typeof res.visitor === 'object' ? res.visitor : {}),
         id: res.visitor?.id || `vis-mob-${Date.now()}`,

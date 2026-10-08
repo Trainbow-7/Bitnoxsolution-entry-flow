@@ -2,16 +2,142 @@
 // Enables real-time cross-device visitor sync on *.vercel.app
 
 const INITIAL_STAFF = [
-  { id: 'staff-femi', name: 'Engr Oluwafemi Faleye', email: 'femi.faleye@bitnox.com', phone: '+234 803 123 4567', department: 'Tech Institute', role_title: 'Lead Instructor & Founder', is_active: true },
-  { id: 'staff-ben', name: 'Mr. Ben Sam', email: 'ben.sam@bitnox.com', phone: '+234 802 234 5678', department: 'Tech Institute', role_title: 'Senior Software Engineering Instructor', is_active: true },
-  { id: 'staff-usman', name: 'Mr. Oyeboade Usman O.', email: 'usman.oyeboade@bitnox.com', phone: '+234 805 345 6789', department: 'Tech Institute', role_title: 'Head of Technical Operations', is_active: true },
-  { id: 'staff-sarah', name: 'Sarah Jenkins', email: 'sarah.j@bitnox.com', phone: '+1 (555) 234-5678', department: 'Tech Institute', role_title: 'Admissions Coordinator', is_active: true },
-  { id: 'staff-marcus', name: 'Marcus Vance', email: 'marcus.v@bitnox.com', phone: '+1 (555) 345-6789', department: 'Tech Institute', role_title: 'Senior Instructor', is_active: true },
-  { id: 'staff-elena', name: 'Elena Gomez', email: 'elena.g@bitnox.com', phone: '+1 (555) 456-7890', department: 'Dry Cleaning', role_title: 'Lead Garment Specialist', is_active: true },
-  { id: 'staff-david', name: 'David Kim', email: 'david.k@bitnox.com', phone: '+1 (555) 567-8901', department: 'Dry Cleaning', role_title: 'Customer Service & Intake Specialist', is_active: true },
+  { id: 'staff-femi', name: 'Engr Oluwafemi Faleye', email: 'femi.faleye@bitnox.com', phone: '+234 803 123 4567', department: 'Tech Institute', role_title: 'CEO & Managing Director', is_active: true },
+  { id: 'staff-ben', name: 'Mr. Ben Sam', email: 'ben.sam@bitnox.com', phone: '+234 802 234 5678', department: 'Tech Institute', role_title: 'AI/ML & Software Engineering Instructor', is_active: true },
+  { id: 'staff-usman', name: 'Mr. Oyeboade Usman O.', email: 'usman.oyeboade@bitnox.com', phone: '+234 805 345 6789', department: 'Tech Institute', role_title: 'Data Analytics Instructor', is_active: true },
+  { id: 'staff-sarah', name: 'Sarah Jenkins', email: 'sarah.j@bitnox.com', phone: '+1 (555) 234-5678', department: 'Tech Institute', role_title: 'Web Dev Instructor & Career Coach', is_active: true },
+  { id: 'staff-marcus', name: 'Marcus Brody', email: 'marcus.b@bitnox.com', phone: '+1 (555) 345-6789', department: 'Tech Institute', role_title: 'Admissions & Enrollment Advisor', is_active: true },
+  { id: 'staff-elena', name: 'Elena Gomez', email: 'elena.g@bitnox.com', phone: '+1 (555) 456-7890', department: 'Dry Cleaning', role_title: 'Head Garment Specialist & Quality Lead', is_active: true },
+  { id: 'staff-david', name: 'David Kim', email: 'david.k@bitnox.com', phone: '+1 (555) 567-8901', department: 'Dry Cleaning', role_title: 'Operations & Laundry Facility Manager', is_active: true },
 ];
 
+function autoRouteStaff(visData) {
+  if (visData && visData.staff_to_see_id) {
+    const directStaff = INITIAL_STAFF.find(
+      (s) => s.id === visData.staff_to_see_id || s.name.toLowerCase() === String(visData.staff_to_see_id).toLowerCase()
+    );
+    if (directStaff) return directStaff;
+  }
+  const text = `${visData.purpose_of_visit || ''} ${visData.services_requested || ''} ${visData.remarks || ''}`.toLowerCase();
+  const dept = visData.department;
+
+  if (dept === 'Dry Cleaning' || text.includes('dry clean') || text.includes('laundry')) {
+    if (text.includes('silk') || text.includes('wool') || text.includes('gown') || text.includes('suit') || text.includes('delicate') || text.includes('elena')) {
+      return INITIAL_STAFF[5]; // Elena Gomez
+    }
+    return INITIAL_STAFF[6]; // David Kim
+  }
+
+  // 1. AI/ML, Machine Learning, Deep Learning, Lectures with Mr Ben
+  if (
+    text.includes('ai') ||
+    text.includes('ml') ||
+    text.includes('machine learning') ||
+    text.includes('deep learning') ||
+    text.includes('neural') ||
+    text.includes('python') ||
+    text.includes('lecture') ||
+    text.includes('ben')
+  ) {
+    return INITIAL_STAFF[1]; // Mr. Ben Sam
+  }
+
+  // 2. Data Analytics, PowerBI, SQL
+  if (
+    text.includes('data') ||
+    text.includes('analytics') ||
+    text.includes('powerbi') ||
+    text.includes('sql') ||
+    text.includes('tableau') ||
+    text.includes('excel') ||
+    text.includes('usman') ||
+    text.includes('oyeboade')
+  ) {
+    return INITIAL_STAFF[2]; // Mr. Oyeboade Usman O.
+  }
+
+  // 3. Web Dev / Frontend
+  if (
+    text.includes('web') ||
+    text.includes('react') ||
+    text.includes('javascript') ||
+    text.includes('frontend') ||
+    text.includes('full-stack') ||
+    text.includes('coding') ||
+    text.includes('sarah')
+  ) {
+    return INITIAL_STAFF[3]; // Sarah Jenkins
+  }
+
+  // 4. Admissions / Enrollment / Curriculum
+  if (
+    text.includes('admission') ||
+    text.includes('enroll') ||
+    text.includes('inquiry') ||
+    text.includes('syllabus') ||
+    text.includes('marcus')
+  ) {
+    return INITIAL_STAFF[4]; // Marcus Brody
+  }
+
+  // 5. CEO / Managing Director
+  if (
+    text.includes('founder') ||
+    text.includes('ceo') ||
+    text.includes('director') ||
+    text.includes('partner') ||
+    text.includes('executive') ||
+    text.includes('femi') ||
+    text.includes('faleye')
+  ) {
+    return INITIAL_STAFF[0]; // Engr Oluwafemi Faleye
+  }
+
+  // Default to Mr. Ben Sam for Tech Institute students receiving lectures
+  if (visData.purpose_of_visit === 'Existing Trainee' || visData.purpose_of_visit === 'Prospective Student') {
+    return INITIAL_STAFF[1];
+  }
+
+  return INITIAL_STAFF[1];
+}
+
 const globalVisitors = [
+  {
+    id: 'vis-tayo-deola-1',
+    full_name: 'TAYO DEOLA',
+    phone_number: '+2348035472156',
+    email: 'tayo.deola@bitnox.edu.ng',
+    arrival_datetime: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    purpose_of_visit: 'Existing Trainee',
+    department: 'Tech Institute',
+    staff_to_see_id: 'staff-ben',
+    staff_to_see: INITIAL_STAFF[1],
+    services_requested: 'AI/ML Lecture Series & Deep Learning Practical Session',
+    expected_duration: '<15 min',
+    status: 'In Progress',
+    remarks: 'Enrolled student attending AI/ML lecture module with Mr. Ben.',
+    check_in_method: 'Manual Entry',
+    created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'vis-temitayo-samson-2',
+    full_name: 'TEMITAYO SAMSON OYEDEJI',
+    phone_number: '+2348035472186',
+    email: 'tplusonice@gmail.com',
+    arrival_datetime: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    purpose_of_visit: 'Prospective Student',
+    department: 'Tech Institute',
+    staff_to_see_id: 'staff-ben',
+    staff_to_see: INITIAL_STAFF[1],
+    services_requested: 'AI/ML Curriculum Evaluation & Demo Lecture Observation',
+    expected_duration: '15-30 min',
+    status: 'In Progress',
+    remarks: 'Prospective trainee receiving introductory AI/ML lectures with Mr. Ben.',
+    check_in_method: 'Manual Entry',
+    created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+  },
   {
     id: 'vis-initial-1',
     full_name: 'Sophia Williams',
@@ -105,6 +231,24 @@ module.exports = async function handler(req, res) {
           linked_staff_id: null,
           linked_staff: null,
         };
+      } else if (email.includes('usman')) {
+        user = {
+          id: 'usr-usman',
+          name: 'Mr. Oyeboade Usman O.',
+          email: 'usman.oyeboade@bitnox.com',
+          role: 'Staff',
+          linked_staff_id: 'staff-usman',
+          linked_staff: INITIAL_STAFF[2],
+        };
+      } else if (email.includes('elena')) {
+        user = {
+          id: 'usr-elena',
+          name: 'Elena Gomez',
+          email: 'elena.gomez@bitnox.com',
+          role: 'Staff',
+          linked_staff_id: 'staff-elena',
+          linked_staff: INITIAL_STAFF[5],
+        };
       } else {
         user = {
           id: 'usr-ben',
@@ -141,6 +285,24 @@ module.exports = async function handler(req, res) {
           linked_staff_id: 'staff-femi',
           linked_staff: INITIAL_STAFF[0],
         };
+      } else if (authHeader.includes('usman')) {
+        user = {
+          id: 'usr-usman',
+          name: 'Mr. Oyeboade Usman O.',
+          email: 'usman.oyeboade@bitnox.com',
+          role: 'Staff',
+          linked_staff_id: 'staff-usman',
+          linked_staff: INITIAL_STAFF[2],
+        };
+      } else if (authHeader.includes('elena')) {
+        user = {
+          id: 'usr-elena',
+          name: 'Elena Gomez',
+          email: 'elena.gomez@bitnox.com',
+          role: 'Staff',
+          linked_staff_id: 'staff-elena',
+          linked_staff: INITIAL_STAFF[5],
+        };
       } else if (authHeader.includes('ben') || authHeader.includes('staff')) {
         user = {
           id: 'usr-ben',
@@ -158,7 +320,7 @@ module.exports = async function handler(req, res) {
     if (method === 'GET' && pathname === '/checkin-sessions/recent') {
       const recent = [...globalVisitors]
         .sort((a, b) => new Date(b.arrival_datetime).getTime() - new Date(a.arrival_datetime).getTime())
-        .slice(0, 15);
+        .slice(0, 20);
       return sendJson(200, recent);
     }
 
@@ -170,7 +332,7 @@ module.exports = async function handler(req, res) {
         return sendJson(400, { error: 'Visitor data is required' });
       }
 
-      const staff = INITIAL_STAFF.find((s) => s.id === vis.staff_to_see_id) || vis.staff_to_see || null;
+      const routedStaff = autoRouteStaff(vis);
       const hydrated = {
         id: vis.id || `vis-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
         full_name: String(vis.full_name).trim(),
@@ -179,8 +341,8 @@ module.exports = async function handler(req, res) {
         arrival_datetime: vis.arrival_datetime || new Date().toISOString(),
         purpose_of_visit: vis.purpose_of_visit || 'General Inquiry',
         department: vis.department === 'Dry Cleaning' ? 'Dry Cleaning' : 'Tech Institute',
-        staff_to_see_id: vis.staff_to_see_id || null,
-        staff_to_see: staff,
+        staff_to_see_id: (routedStaff && routedStaff.id) || vis.staff_to_see_id || 'staff-ben',
+        staff_to_see: routedStaff || INITIAL_STAFF[1],
         services_requested: vis.services_requested || null,
         expected_duration: vis.expected_duration || '15-30 min',
         status: vis.status || 'In Progress',
@@ -203,7 +365,7 @@ module.exports = async function handler(req, res) {
     // Route 3: POST /checkin-sessions/:token/submit (Mobile Check-In)
     if (method === 'POST' && pathname.startsWith('/checkin-sessions/') && pathname.endsWith('/submit')) {
       const body = await parseBody(req);
-      const staff = INITIAL_STAFF.find((s) => s.id === body.staff_to_see_id) || null;
+      const routedStaff = autoRouteStaff(body);
 
       const newVisitor = {
         id: `vis-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
@@ -211,10 +373,10 @@ module.exports = async function handler(req, res) {
         phone_number: String(body.phone_number || '').trim(),
         email: body.email ? String(body.email).trim() : null,
         arrival_datetime: new Date().toISOString(),
-        purpose_of_visit: body.purpose_of_visit || 'Prospective Student',
+        purpose_of_visit: body.purpose_of_visit || 'Existing Trainee',
         department: body.department === 'Dry Cleaning' ? 'Dry Cleaning' : 'Tech Institute',
-        staff_to_see_id: body.staff_to_see_id || null,
-        staff_to_see: staff,
+        staff_to_see_id: routedStaff ? routedStaff.id : 'staff-ben',
+        staff_to_see: routedStaff || INITIAL_STAFF[1],
         services_requested: body.services_requested || null,
         expected_duration: body.expected_duration || '15-30 min',
         status: 'In Progress',
@@ -293,10 +455,127 @@ module.exports = async function handler(req, res) {
       return sendJson(200, inOffice);
     }
 
+    // Route 7b: GET /visitors/my-visitors (Assigned staff visitors)
+    if (method === 'GET' && (pathname === '/visitors/my-visitors' || pathname === '/visitors/my-assigned')) {
+      const searchParam = (url.searchParams.get('search') || '').toLowerCase().trim();
+      const statusParam = url.searchParams.get('status') || '';
+      const staffIdParam = url.searchParams.get('staff_to_see_id') || '';
+      const authHeader = String(req.headers.authorization || '').toLowerCase();
+
+      let targetStaffId = staffIdParam;
+      let targetName = '';
+
+      if (!targetStaffId) {
+        if (authHeader.includes('ben') || authHeader.includes('usr-ben')) {
+          targetStaffId = 'staff-ben';
+          targetName = 'ben';
+        } else if (authHeader.includes('usman') || authHeader.includes('usr-usman')) {
+          targetStaffId = 'staff-usman';
+          targetName = 'usman';
+        } else if (authHeader.includes('elena') || authHeader.includes('usr-elena')) {
+          targetStaffId = 'staff-elena';
+          targetName = 'elena';
+        } else if (authHeader.includes('admin') || authHeader.includes('usr-admin')) {
+          targetStaffId = '';
+        } else {
+          // Default to Mr. Ben Sam
+          targetStaffId = 'staff-ben';
+          targetName = 'ben';
+        }
+      } else if (targetStaffId.toLowerCase().includes('ben')) {
+        targetName = 'ben';
+      }
+
+      let matches = globalVisitors.filter((v) => {
+        // Status filter
+        if (statusParam && statusParam !== 'All') {
+          if (v.status !== statusParam) return false;
+        }
+
+        // Search filter
+        if (searchParam) {
+          const nameMatch = v.full_name?.toLowerCase().includes(searchParam);
+          const phoneMatch = v.phone_number?.toLowerCase().includes(searchParam);
+          const emailMatch = v.email?.toLowerCase().includes(searchParam);
+          const serviceMatch = v.services_requested?.toLowerCase().includes(searchParam);
+          if (!nameMatch && !phoneMatch && !emailMatch && !serviceMatch) return false;
+        }
+
+        // Staff scoping
+        if (targetStaffId) {
+          const vStaffId = v.staff_to_see_id || v.staff_to_see?.id;
+          const vStaffName = (v.staff_to_see?.name || '').toLowerCase();
+          const idMatch =
+            vStaffId === targetStaffId ||
+            (targetStaffId === 'staff-ben' && (vStaffId === 'b45717ff-ff1f-460a-893f-847e69f500f2' || vStaffId === 'staff-ben-1'));
+          const nameMatch = targetName && vStaffName.includes(targetName);
+          const lectureMatch =
+            targetName === 'ben' &&
+            ((v.services_requested || '').toLowerCase().includes('ai') ||
+              (v.services_requested || '').toLowerCase().includes('ml') ||
+              (v.remarks || '').toLowerCase().includes('ben') ||
+              (v.purpose_of_visit === 'Existing Trainee' && v.department === 'Tech Institute'));
+
+          return idMatch || nameMatch || lectureMatch;
+        }
+
+        return true;
+      });
+
+      return sendJson(200, {
+        visitors: matches,
+        total: matches.length,
+        page: 1,
+        limit: 50,
+        total_pages: Math.ceil(matches.length / 50) || 1,
+      });
+    }
+
+    // Route 7c: GET /visitors (Full list with filters)
+    if (method === 'GET' && pathname === '/visitors') {
+      const searchParam = (url.searchParams.get('search') || '').toLowerCase().trim();
+      const statusParam = url.searchParams.get('status') || '';
+      const deptParam = url.searchParams.get('department') || '';
+      const purposeParam = url.searchParams.get('purpose_of_visit') || '';
+      const staffParam = url.searchParams.get('staff_id') || url.searchParams.get('staff_to_see_id') || '';
+      const page = parseInt(url.searchParams.get('page') || '1', 10);
+      const limit = parseInt(url.searchParams.get('limit') || '20', 10);
+
+      let matches = globalVisitors.filter((v) => {
+        if (statusParam && statusParam !== 'All' && v.status !== statusParam) return false;
+        if (deptParam && deptParam !== 'All' && v.department !== deptParam) return false;
+        if (purposeParam && purposeParam !== 'All' && v.purpose_of_visit !== purposeParam) return false;
+        if (staffParam && staffParam !== 'All') {
+          const sId = v.staff_to_see_id || v.staff_to_see?.id;
+          if (sId !== staffParam && !v.staff_to_see?.name?.toLowerCase().includes(staffParam.toLowerCase())) return false;
+        }
+        if (searchParam) {
+          const match =
+            v.full_name?.toLowerCase().includes(searchParam) ||
+            v.phone_number?.toLowerCase().includes(searchParam) ||
+            (v.email && v.email.toLowerCase().includes(searchParam)) ||
+            (v.services_requested && v.services_requested.toLowerCase().includes(searchParam));
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      const start = (page - 1) * limit;
+      const paginated = matches.slice(start, start + limit);
+
+      return sendJson(200, {
+        visitors: paginated,
+        total: matches.length,
+        page,
+        limit,
+        total_pages: Math.ceil(matches.length / limit) || 1,
+      });
+    }
+
     // Route 8: POST /visitors/checkin (Manual Desk Check-In)
     if (method === 'POST' && pathname === '/visitors/checkin') {
       const body = await parseBody(req);
-      const staff = INITIAL_STAFF.find((s) => s.id === body.staff_to_see_id) || null;
+      const routedStaff = autoRouteStaff(body);
 
       const newVisitor = {
         id: `vis-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
@@ -306,8 +585,8 @@ module.exports = async function handler(req, res) {
         arrival_datetime: new Date().toISOString(),
         purpose_of_visit: body.purpose_of_visit || 'General',
         department: body.department === 'Dry Cleaning' ? 'Dry Cleaning' : 'Tech Institute',
-        staff_to_see_id: body.staff_to_see_id || null,
-        staff_to_see: staff,
+        staff_to_see_id: routedStaff ? routedStaff.id : 'staff-ben',
+        staff_to_see: routedStaff || INITIAL_STAFF[1],
         services_requested: body.services_requested || null,
         expected_duration: body.expected_duration || '15-30 min',
         status: 'In Progress',
@@ -336,6 +615,33 @@ module.exports = async function handler(req, res) {
       return sendJson(404, { error: 'Visitor not found' });
     }
 
+    // Route 9b: POST /visitors/:id/cancel
+    if (method === 'POST' && pathname.includes('/cancel')) {
+      const parts = pathname.split('/');
+      const id = parts[2];
+      const visitor = globalVisitors.find((v) => v.id === id);
+      if (visitor) {
+        visitor.status = 'Cancelled';
+        visitor.checkout_datetime = new Date().toISOString();
+        visitor.updated_at = new Date().toISOString();
+        return sendJson(200, { visitor, message: 'Visitor marked as cancelled.' });
+      }
+      return sendJson(404, { error: 'Visitor not found' });
+    }
+
+    // Route 9c: PUT /visitors/:id
+    if (method === 'PUT' && pathname.startsWith('/visitors/')) {
+      const parts = pathname.split('/');
+      const id = parts[2];
+      const body = await parseBody(req);
+      const visitor = globalVisitors.find((v) => v.id === id);
+      if (visitor) {
+        Object.assign(visitor, body, { updated_at: new Date().toISOString() });
+        return sendJson(200, visitor);
+      }
+      return sendJson(404, { error: 'Visitor not found' });
+    }
+
     // Route 10: GET /staff
     if (method === 'GET' && pathname === '/staff') {
       return sendJson(200, INITIAL_STAFF);
@@ -352,6 +658,11 @@ module.exports = async function handler(req, res) {
         dry_cleaning_visitors_today: globalVisitors.filter((v) => v.department === 'Dry Cleaning').length,
         average_visit_duration_minutes: 24,
       });
+    }
+
+    // Route 12: GET /visitors/overstay-alerts
+    if (method === 'GET' && pathname === '/visitors/overstay-alerts') {
+      return sendJson(200, []);
     }
 
     // Default 404 for unhandled API endpoints

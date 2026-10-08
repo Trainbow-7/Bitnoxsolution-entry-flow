@@ -26,6 +26,30 @@ export async function checkInVisitor(req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Intelligent auto-routing if staff_to_see_id was not explicitly specified
+    let resolvedStaffId = staff_to_see_id || null;
+    if (!resolvedStaffId) {
+      const combined = `${purpose_of_visit || ''} ${services_requested || ''} ${remarks || ''}`.toLowerCase();
+      if (department === 'Dry Cleaning' || combined.includes('dry clean')) {
+        const dStaff = await prisma.staff.findFirst({ where: { department: 'Dry Cleaning' } });
+        resolvedStaffId = dStaff?.id || null;
+      } else {
+        if (combined.includes('ai') || combined.includes('ml') || combined.includes('lecture') || combined.includes('ben')) {
+          const ben = await prisma.staff.findFirst({ where: { name: { contains: 'Ben' } } });
+          resolvedStaffId = ben?.id || null;
+        } else if (combined.includes('data') || combined.includes('analytics') || combined.includes('usman')) {
+          const usman = await prisma.staff.findFirst({ where: { name: { contains: 'Usman' } } });
+          resolvedStaffId = usman?.id || null;
+        } else if (combined.includes('web') || combined.includes('sarah')) {
+          const sarah = await prisma.staff.findFirst({ where: { name: { contains: 'Sarah' } } });
+          resolvedStaffId = sarah?.id || null;
+        } else {
+          const ben = await prisma.staff.findFirst({ where: { name: { contains: 'Ben' } } });
+          resolvedStaffId = ben?.id || null;
+        }
+      }
+    }
+
     const visitor = await prisma.visitor.create({
       data: {
         full_name: full_name.trim(),
@@ -33,7 +57,7 @@ export async function checkInVisitor(req: AuthRequest, res: Response): Promise<v
         email: email ? email.trim() : null,
         purpose_of_visit,
         department,
-        staff_to_see_id: staff_to_see_id || null,
+        staff_to_see_id: resolvedStaffId,
         services_requested: services_requested ? services_requested.trim() : null,
         expected_duration: expected_duration || null,
         status: 'In Progress',
@@ -259,18 +283,53 @@ export async function getMyVisitors(req: AuthRequest, res: Response): Promise<vo
 
     const where: any = {};
 
-    // Strict role scoping
+    // Strict role scoping with multi-field and lecture-student matching
+    const andClauses: any[] = [];
+
     if (req.user?.role === 'Staff') {
-      if (!req.user.linked_staff_id) {
-        res.json({ visitors: [], total: 0, page: 1, total_pages: 0 });
-        return;
+      const staffId = req.user.linked_staff_id;
+      const staffName = (req.user.name || '').toLowerCase();
+
+      const staffConditions: any[] = [];
+      if (staffId) {
+        staffConditions.push({ staff_to_see_id: staffId });
       }
-      // Staff is strictly locked to their own linked staff ID regardless of any client parameter
-      where.staff_to_see_id = req.user.linked_staff_id;
+      if (staffName.includes('ben')) {
+        staffConditions.push({ staff_to_see_id: 'staff-ben' });
+        staffConditions.push({ staff_to_see_id: 'staff-ben-1' });
+        staffConditions.push({ staff_to_see: { name: { contains: 'Ben' } } });
+        staffConditions.push({ services_requested: { contains: 'AI' } });
+        staffConditions.push({ services_requested: { contains: 'ML' } });
+        staffConditions.push({ remarks: { contains: 'Ben' } });
+        staffConditions.push({ remarks: { contains: 'lecture' } });
+        staffConditions.push({
+          AND: [
+            { purpose_of_visit: 'Existing Trainee' },
+            { department: 'Tech Institute' }
+          ]
+        });
+      } else if (staffName.includes('usman')) {
+        staffConditions.push({ staff_to_see: { name: { contains: 'Usman' } } });
+        staffConditions.push({ staff_to_see_id: 'staff-usman' });
+      } else if (staffName.includes('elena')) {
+        staffConditions.push({ staff_to_see: { name: { contains: 'Elena' } } });
+        staffConditions.push({ staff_to_see_id: 'staff-elena' });
+      } else {
+        const namePart = staffName.split(' ').pop();
+        if (namePart) {
+          staffConditions.push({ staff_to_see: { name: { contains: namePart } } });
+        }
+      }
+
+      andClauses.push({ OR: staffConditions });
     } else if (req.user?.role === 'Admin') {
-      // Admin has full visibility: can filter by selected staff or view all
       if (staff_to_see_id && staff_to_see_id !== 'All') {
-        where.staff_to_see_id = String(staff_to_see_id);
+        andClauses.push({
+          OR: [
+            { staff_to_see_id: String(staff_to_see_id) },
+            { staff_to_see: { id: String(staff_to_see_id) } }
+          ]
+        });
       }
     } else {
       res.status(403).json({ error: 'Access denied: Only Staff and Admin can view assigned visitors.' });
@@ -283,12 +342,18 @@ export async function getMyVisitors(req: AuthRequest, res: Response): Promise<vo
 
     if (search) {
       const q = String(search).trim();
-      where.OR = [
-        { full_name: { contains: q } },
-        { phone_number: { contains: q } },
-        { email: { contains: q } },
-        { services_requested: { contains: q } },
-      ];
+      andClauses.push({
+        OR: [
+          { full_name: { contains: q } },
+          { phone_number: { contains: q } },
+          { email: { contains: q } },
+          { services_requested: { contains: q } },
+        ],
+      });
+    }
+
+    if (andClauses.length > 0) {
+      where.AND = andClauses;
     }
 
     const now = new Date();
@@ -530,6 +595,9 @@ export async function updateVisitor(req: AuthRequest, res: Response): Promise<vo
         services_requested: services_requested !== undefined ? services_requested : existing.services_requested,
         expected_duration: expected_duration !== undefined ? expected_duration : existing.expected_duration,
         remarks: remarks !== undefined ? remarks : existing.remarks,
+        status: req.body.status !== undefined ? req.body.status : existing.status,
+        checkout_datetime: req.body.checkout_datetime !== undefined ? req.body.checkout_datetime : existing.checkout_datetime,
+        arrival_datetime: req.body.arrival_datetime !== undefined ? new Date(req.body.arrival_datetime) : existing.arrival_datetime,
       },
       include: {
         staff_to_see: true,

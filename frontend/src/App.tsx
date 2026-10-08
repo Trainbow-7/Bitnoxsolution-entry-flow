@@ -201,25 +201,34 @@ const MainApp: React.FC = () => {
   const knownVisitorIdsRef = useRef<Set<string> | null>(null);
   const alertedOverstayIdsRef = useRef<Set<string>>(new Set());
 
-  // Real-time visitor polling & arrival chime detector (runs for Receptionist & Admin)
+  // Real-time visitor polling & arrival chime detector (Receptionist, Admin, & Staff assigned visitors)
   useEffect(() => {
-    if (!user || (!isAdmin && !isReceptionist)) return;
+    if (!user) return;
 
     let isSubscribed = true;
 
     const syncLiveVisitors = async () => {
       try {
-        const visitors = await api.visitors.getCurrentlyInOffice();
-        if (!isSubscribed) return;
+        let activeList: any[] = [];
+        if (isStaff) {
+          const res = await api.visitors.getMyVisitors({
+            status: 'In Progress',
+            staff_to_see_id: user.linked_staff_id || 'staff-ben',
+          });
+          activeList = res.visitors || [];
+        } else {
+          activeList = await api.visitors.getCurrentlyInOffice();
+        }
 
-        setLiveCount(visitors.length);
+        if (!isSubscribed) return;
+        setLiveCount(activeList.length);
 
         if (knownVisitorIdsRef.current === null) {
           // Initial mount: record existing visitor IDs without chiming
-          knownVisitorIdsRef.current = new Set(visitors.map((v) => v.id));
+          knownVisitorIdsRef.current = new Set(activeList.map((v) => v.id));
         } else {
           // Subsequent checks: detect newly checked-in visitors
-          const newVisitors = visitors.filter((v) => !knownVisitorIdsRef.current!.has(v.id));
+          const newVisitors = activeList.filter((v) => !knownVisitorIdsRef.current!.has(v.id));
           if (newVisitors.length > 0) {
             newVisitors.forEach((v) => knownVisitorIdsRef.current!.add(v.id));
             playCheckInChime();
@@ -236,7 +245,7 @@ const MainApp: React.FC = () => {
       isSubscribed = false;
       clearInterval(interval);
     };
-  }, [user, isAdmin, isReceptionist]);
+  }, [user, isAdmin, isReceptionist, isStaff]);
 
   // Real-time Overstay Alerts detector & audio chime (Receptionist & Admin only)
   useEffect(() => {

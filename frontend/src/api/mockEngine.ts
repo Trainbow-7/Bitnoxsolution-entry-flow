@@ -26,7 +26,7 @@ const INITIAL_STAFF: Staff[] = [
     id: 'staff-ben',
     name: 'Mr. Ben Sam',
     department: 'Tech Institute',
-    role_title: 'AI/ML Instructor',
+    role_title: 'AI/ML & Software Engineering Instructor',
     created_at: new Date(Date.now() - 60 * 86400000).toISOString(),
     updated_at: new Date(Date.now() - 60 * 86400000).toISOString(),
   },
@@ -143,6 +143,46 @@ const INITIAL_SETTINGS: SystemSettings = {
 function generateInitialVisitors(): Visitor[] {
   const now = new Date();
   const visitors: Visitor[] = [
+    {
+      id: 'vis-tayo-deola-1',
+      full_name: 'TAYO DEOLA',
+      phone_number: '+2348035472156',
+      email: 'tayo.deola@bitnox.edu.ng',
+      arrival_datetime: new Date(now.getTime() - 5 * 60 * 1000).toISOString(),
+      purpose_of_visit: 'Existing Trainee',
+      department: 'Tech Institute',
+      staff_to_see_id: 'staff-ben',
+      staff_to_see: INITIAL_STAFF[1],
+      services_requested: 'AI/ML Lecture Series & Deep Learning Practical Session',
+      expected_duration: '<15 min',
+      status: 'In Progress',
+      remarks: 'Enrolled student attending AI/ML lecture module with Mr. Ben.',
+      check_in_method: 'Manual Entry',
+      created_by_user_id: 'usr-recep',
+      created_by_user: { id: 'usr-recep', name: 'Kikelomo Oluwanishola', email: 'receptionist@bitnox.com' },
+      created_at: new Date(now.getTime() - 5 * 60 * 1000).toISOString(),
+      updated_at: new Date(now.getTime() - 5 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'vis-temitayo-samson-2',
+      full_name: 'TEMITAYO SAMSON OYEDEJI',
+      phone_number: '+2348035472186',
+      email: 'tplusonice@gmail.com',
+      arrival_datetime: new Date(now.getTime() - 10 * 60 * 1000).toISOString(),
+      purpose_of_visit: 'Prospective Student',
+      department: 'Tech Institute',
+      staff_to_see_id: 'staff-ben',
+      staff_to_see: INITIAL_STAFF[1],
+      services_requested: 'AI/ML Curriculum Evaluation & Demo Lecture Observation',
+      expected_duration: '15-30 min',
+      status: 'In Progress',
+      remarks: 'Prospective trainee receiving introductory AI/ML lectures with Mr. Ben.',
+      check_in_method: 'Manual Entry',
+      created_by_user_id: 'usr-recep',
+      created_by_user: { id: 'usr-recep', name: 'Kikelomo Oluwanishola', email: 'receptionist@bitnox.com' },
+      created_at: new Date(now.getTime() - 10 * 60 * 1000).toISOString(),
+      updated_at: new Date(now.getTime() - 10 * 60 * 1000).toISOString(),
+    },
     {
       id: 'vis-1',
       full_name: 'Jonathan Miller',
@@ -499,9 +539,70 @@ export const mockApi = {
       limit: number;
       total_pages: number;
     }> => {
-      const userRes = await mockApi.auth.me();
-      const staffId = userRes.user.linked_staff_id;
-      return mockApi.visitors.getVisitors({ ...params, staff_id: staffId || 'none' });
+      let staffId = params.staff_to_see_id || params.staff_id;
+      let userName = '';
+      try {
+        const userRes = await mockApi.auth.me();
+        staffId = staffId || userRes.user.linked_staff_id;
+        userName = userRes.user.name || '';
+      } catch {}
+
+      const allVisitors = storage.getVisitors();
+      const staffList = storage.getStaff();
+      const targetName = (userName || '').toLowerCase();
+      const isBen = targetName.includes('ben') || (staffId && String(staffId).includes('ben'));
+
+      let filtered = allVisitors.filter((v) => {
+        if (params.status && params.status !== 'All') {
+          if (v.status !== params.status) return false;
+        }
+
+        if (params.search) {
+          const q = String(params.search).toLowerCase();
+          const match =
+            v.full_name.toLowerCase().includes(q) ||
+            v.phone_number.toLowerCase().includes(q) ||
+            (v.email && v.email.toLowerCase().includes(q)) ||
+            (v.services_requested && v.services_requested.toLowerCase().includes(q));
+          if (!match) return false;
+        }
+
+        if (staffId && staffId !== 'All') {
+          const vStaffId = v.staff_to_see_id || v.staff_to_see?.id;
+          const vStaffName = (v.staff_to_see?.name || '').toLowerCase();
+          const idMatch = vStaffId === staffId;
+          const nameMatch = targetName && vStaffName.includes(targetName);
+          const benMatch = isBen && (
+            vStaffId === 'staff-ben' ||
+            vStaffId === 'staff-ben-1' ||
+            vStaffName.includes('ben') ||
+            (v.services_requested || '').toLowerCase().includes('ai') ||
+            (v.services_requested || '').toLowerCase().includes('ml') ||
+            (v.remarks || '').toLowerCase().includes('ben') ||
+            (v.purpose_of_visit === 'Existing Trainee' && v.department === 'Tech Institute')
+          );
+          return idMatch || nameMatch || benMatch;
+        }
+
+        return true;
+      });
+
+      const total = filtered.length;
+      const page = Number(params.page) || 1;
+      const limit = Number(params.limit) || 50;
+      const start = (page - 1) * limit;
+      const paginated = filtered.slice(start, start + limit).map((v) => ({
+        ...v,
+        staff_to_see: (v.staff_to_see_id && staffList.find((s) => s.id === v.staff_to_see_id)) || v.staff_to_see || null,
+      }));
+
+      return {
+        visitors: paginated,
+        total,
+        page,
+        limit,
+        total_pages: Math.ceil(total / limit) || 1,
+      };
     },
 
     getById: async (id: string): Promise<Visitor> => {
@@ -514,7 +615,21 @@ export const mockApi = {
     checkIn: async (data: Partial<Visitor>): Promise<Visitor> => {
       const visitors = storage.getVisitors();
       const staffList = storage.getStaff();
-      const staff = staffList.find((s) => s.id === data.staff_to_see_id);
+      let staff = staffList.find((s) => s.id === data.staff_to_see_id);
+      if (!staff) {
+        const text = `${data.purpose_of_visit || ''} ${data.services_requested || ''} ${data.remarks || ''}`.toLowerCase();
+        if (text.includes('ai') || text.includes('ml') || text.includes('lecture') || text.includes('ben')) {
+          staff = staffList.find((s) => s.id === 'staff-ben') || staffList[1];
+        } else if (text.includes('data') || text.includes('usman')) {
+          staff = staffList.find((s) => s.id === 'staff-usman') || staffList[2];
+        } else if (text.includes('web') || text.includes('sarah')) {
+          staff = staffList.find((s) => s.id === 'staff-sarah') || staffList[3];
+        } else if (data.department === 'Dry Cleaning' || text.includes('dry clean')) {
+          staff = staffList.find((s) => s.id === 'staff-elena') || staffList[5];
+        } else {
+          staff = staffList.find((s) => s.id === 'staff-ben') || staffList[1];
+        }
+      }
 
       const newVisitor: Visitor = {
         id: `vis-${Date.now()}`,

@@ -68,19 +68,27 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
 
       if (isAdmin && selectedStaffId !== 'All') {
         params.staff_to_see_id = selectedStaffId;
+      } else if (isStaff) {
+        if (user?.linked_staff_id) {
+          params.staff_to_see_id = user.linked_staff_id;
+        } else if (user?.name?.toLowerCase().includes('ben')) {
+          params.staff_to_see_id = 'staff-ben';
+        }
       }
 
       const res = await api.visitors.getMyVisitors(params);
-      setVisitors(res.visitors);
+      setVisitors(res.visitors || []);
     } catch (err: any) {
       console.error('Failed to load assigned visitors:', err);
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, isAdmin, selectedStaffId]);
+  }, [search, statusFilter, isAdmin, isStaff, user, selectedStaffId]);
 
   useEffect(() => {
     fetchAssignedVisitors();
+    const interval = setInterval(fetchAssignedVisitors, 3500);
+    return () => clearInterval(interval);
   }, [fetchAssignedVisitors]);
 
   const handleCheckoutCurrent = async () => {
@@ -288,9 +296,26 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
                 return (
                   <tr key={v.id} onClick={() => setSelectedVisitor(v)}>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{v.full_name}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 600 }}>{v.full_name}</span>
+                        {(v.purpose_of_visit === 'Existing Trainee' || v.services_requested?.toLowerCase().includes('ai') || v.services_requested?.toLowerCase().includes('ml')) && (
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              background: 'rgba(0, 210, 255, 0.15)',
+                              color: 'var(--bitnox-cyan)',
+                              border: '1px solid rgba(0, 210, 255, 0.3)',
+                              borderRadius: '4px',
+                              padding: '0.1rem 0.4rem',
+                            }}
+                          >
+                            AI/ML Student
+                          </span>
+                        )}
+                      </div>
                       {v.services_requested && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {v.services_requested}
                         </div>
                       )}
