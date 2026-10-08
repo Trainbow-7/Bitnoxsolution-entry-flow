@@ -240,10 +240,15 @@ const MainApp: React.FC = () => {
     };
 
     syncLiveVisitors();
-    const interval = setInterval(syncLiveVisitors, 3500);
+
+    // Auto-polling is disabled for Staff to ensure strictly manual refresh per user requirement
+    let interval: any = null;
+    if (!isStaff) {
+      interval = setInterval(syncLiveVisitors, 15000);
+    }
     return () => {
       isSubscribed = false;
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
   }, [user, isAdmin, isReceptionist, isStaff]);
 
@@ -454,11 +459,11 @@ const MainApp: React.FC = () => {
     if (isStaff) {
       switch (currentTab) {
         case 'my-visitors':
-          return <MyVisitors mode="active" />;
+          return <MyVisitors mode="active" onCountChange={(cnt) => setLiveCount(cnt)} />;
         case 'my-visitor-history':
           return <MyVisitors mode="history" />;
         default:
-          return <MyVisitors mode="active" />;
+          return <MyVisitors mode="active" onCountChange={(cnt) => setLiveCount(cnt)} />;
       }
     }
 

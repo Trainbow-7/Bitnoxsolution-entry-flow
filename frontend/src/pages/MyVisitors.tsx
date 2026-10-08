@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/client';
 import { Visitor, VisitorStatus, Staff } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -15,20 +15,24 @@ import {
   CheckCircle,
   ClockCounterClockwise,
   Funnel,
+  ArrowsClockwise,
 } from '@phosphor-icons/react';
 
 interface MyVisitorsProps {
   onNavigateToDashboard?: () => void;
   mode?: 'active' | 'history' | 'all';
+  onCountChange?: (count: number) => void;
 }
 
-export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, mode = 'all' }) => {
+export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, mode = 'all', onCountChange }) => {
   const { user, isStaff, isAdmin } = useAuth();
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string>('All');
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
+  const hasLoadedOnceRef = useRef<boolean>(false);
   
   // Status filter defaults based on mode
   const [statusFilter, setStatusFilter] = useState<VisitorStatus | 'All'>(() => {
@@ -58,8 +62,13 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
     }
   }, [isAdmin]);
 
-  const fetchAssignedVisitors = useCallback(async () => {
-    setLoading(true);
+  const fetchAssignedVisitors = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true);
+    } else if (!hasLoadedOnceRef.current) {
+      setLoading(true);
+    }
+
     try {
       const params: Record<string, any> = {
         search: search.trim() || undefined,
@@ -77,18 +86,24 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
       }
 
       const res = await api.visitors.getMyVisitors(params);
-      setVisitors(res.visitors || []);
+      const list = res.visitors || [];
+      setVisitors(list);
+      if (onCountChange) {
+        const activeCount = list.filter((v: Visitor) => v.status === 'In Progress').length;
+        onCountChange(activeCount);
+      }
     } catch (err: any) {
       console.error('Failed to load assigned visitors:', err);
     } finally {
+      hasLoadedOnceRef.current = true;
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [search, statusFilter, isAdmin, isStaff, user, selectedStaffId]);
+  }, [search, statusFilter, isAdmin, isStaff, user, selectedStaffId, onCountChange]);
 
+  // Initial load and filter change fetch only — NO auto-refresh interval
   useEffect(() => {
-    fetchAssignedVisitors();
-    const interval = setInterval(fetchAssignedVisitors, 3500);
-    return () => clearInterval(interval);
+    fetchAssignedVisitors(false);
   }, [fetchAssignedVisitors]);
 
   const handleCheckoutCurrent = async () => {
@@ -101,7 +116,7 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
       );
       setSelectedVisitor(null);
       setCheckoutRemarks('');
-      await fetchAssignedVisitors();
+      await fetchAssignedVisitors(true);
     } catch (err: any) {
       alert(err.message || 'Failed to complete visitor checkout.');
     } finally {
@@ -209,6 +224,23 @@ export const MyVisitors: React.FC<MyVisitorsProps> = ({ onNavigateToDashboard, m
               </span>
             </div>
           )}
+
+          {/* Explicit Manual Refresh Button */}
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => fetchAssignedVisitors(true)}
+            disabled={refreshing}
+            style={{
+              gap: '0.45rem',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface-elevated)',
+              fontWeight: 600,
+            }}
+            title="Refresh assigned visitors list"
+          >
+            <ArrowsClockwise size={15} weight="bold" className={refreshing ? 'spin' : ''} />
+            <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
         </div>
       </div>
 
