@@ -5,7 +5,7 @@
   "description": "Bitnoxsolution Visitor Management System (VMS)",
   "scripts": {
     "dev": "npm run dev:frontend",
-    "dev:backend": "cd backend && tsx watch src/server.ts",
+    "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "tunnel": "node tunnel.mjs",
     "start:backend": "cd backend && node dist/server.js",

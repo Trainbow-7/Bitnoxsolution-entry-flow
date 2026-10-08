@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   Buildings,
@@ -21,6 +21,35 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
   const { user, role, isAdmin, isReceptionist, logout, quickLogin } = useAuth();
   const [timeStr, setTimeStr] = useState<string>('');
   const [showSwitchMenu, setShowSwitchMenu] = useState<boolean>(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Tracks if the role switcher was engaged from the Executive Dashboard
+  const [switcherActive, setSwitcherActive] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && sessionStorage.getItem('bitnox_executive_switcher_active') === 'true';
+  });
+
+  // Automatically prime the switcher session whenever Admin is on the Executive Dashboard
+  useEffect(() => {
+    if (isAdmin && (!currentTab || currentTab === 'dashboard')) {
+      sessionStorage.setItem('bitnox_executive_switcher_active', 'true');
+      setSwitcherActive(true);
+    }
+  }, [isAdmin, currentTab]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowSwitchMenu(false);
+      }
+    };
+    if (showSwitchMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSwitchMenu]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -38,11 +67,30 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
     target: 'Admin' | 'Receptionist' | 'Staff-Alex' | 'Staff-Ben' | 'Staff-Usman' | 'Staff-Elena'
   ) => {
     setShowSwitchMenu(false);
+    // Keep role switcher active across switched roles so user can navigate back without logging out
+    sessionStorage.setItem('bitnox_executive_switcher_active', 'true');
+    setSwitcherActive(true);
+
+    // Pre-navigate to target role's landing tab to ensure seamless transition without access denied alerts
+    if (target === 'Admin') {
+      window.location.hash = '#dashboard';
+    } else if (target === 'Receptionist') {
+      window.location.hash = '#checkin';
+    } else {
+      window.location.hash = '#my-visitors';
+    }
+
     await quickLogin(target);
   };
 
-  // Only appear on the admin/ceo dashboard, completely removed from every other staff dashboard
-  const showRoleSwitcher = Boolean(isAdmin && (!currentTab || currentTab === 'dashboard'));
+  // The role switcher remains visible:
+  // 1. On Admin/CEO dashboard
+  // 2. When switched to other roles originating from the Executive Dashboard (allowing seamless return to Admin/CEO)
+  // It remains hidden for regular staff who log in directly to their staff dashboards
+  const showRoleSwitcher = Boolean(
+    (isAdmin && (!currentTab || currentTab === 'dashboard')) ||
+    switcherActive
+  );
 
   return (
     <header className="topbar">
@@ -110,18 +158,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
           <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{timeStr}</span>
         </div>
 
-        {/* Demo Quick Role Switcher Button - Shown ONLY on Admin Dashboard */}
+        {/* Demo Quick Role Switcher Button - Shown on Executive Dashboard & persisted when switching between roles */}
         {showRoleSwitcher && (
-          <div style={{ position: 'relative' }}>
+          <div ref={menuRef} style={{ position: 'relative' }}>
             <button
               className="btn btn-secondary btn-sm"
               onClick={() => setShowSwitchMenu(!showSwitchMenu)}
-              style={{ border: '1px dashed var(--bitnox-cyan)', gap: '0.4rem' }}
+              style={{
+                border: !isAdmin ? '1px solid #f87171' : '1px dashed var(--bitnox-cyan)',
+                gap: '0.4rem',
+                background: !isAdmin ? 'rgba(239, 68, 68, 0.1)' : undefined,
+              }}
               title="Fast switch between demo accounts without re-entering credentials"
             >
-              <UserCheck size={14} color="var(--bitnox-cyan)" weight="bold" />
-              <span style={{ fontSize: '0.8rem' }}>Role Switcher</span>
-              <CaretDown size={14} weight="bold" />
+              <UserCheck size={14} color={!isAdmin ? '#f87171' : 'var(--bitnox-cyan)'} weight="bold" />
+              <span style={{ fontSize: '0.8rem', color: !isAdmin ? '#fca5a5' : undefined }}>
+                Role Switcher
+              </span>
+              <CaretDown size={14} weight="bold" color={!isAdmin ? '#fca5a5' : undefined} />
             </button>
 
             {showSwitchMenu && (
@@ -149,9 +203,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                     textTransform: 'uppercase',
                     color: 'var(--text-muted)',
                     padding: '0.3rem 0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
                 >
-                  Instant Demo Logins
+                  <span>Instant Role Switcher</span>
+                  {!isAdmin && (
+                    <span style={{ color: '#f87171', fontSize: '0.65rem' }}>Active Session</span>
+                  )}
                 </div>
                 <button
                   className="btn btn-secondary btn-sm"
@@ -209,7 +269,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                 </button>
                 <button
                   className="btn btn-secondary btn-sm"
-                  style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
+                  style={{
+                    justifyContent: 'flex-start',
+                    gap: '0.6rem',
+                    background: !isAdmin ? 'rgba(239, 68, 68, 0.15)' : undefined,
+                    border: !isAdmin ? '1px solid rgba(239, 68, 68, 0.4)' : undefined,
+                  }}
                   onClick={() => handleRoleSwitch('Admin')}
                 >
                   <img
@@ -224,7 +289,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                       flexShrink: 0,
                     }}
                   />
-                  <span>Admin / CEO (Engr Oluwafemi)</span>
+                  <span style={{ fontWeight: !isAdmin ? 700 : 500, color: !isAdmin ? '#fca5a5' : undefined }}>
+                    Admin / CEO (Engr Oluwafemi) {!isAdmin ? '← Return' : ''}
+                  </span>
                 </button>
               </div>
             )}
@@ -285,7 +352,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
 
           <button
             className="btn btn-danger btn-sm"
-            onClick={logout}
+            onClick={() => {
+              sessionStorage.removeItem('bitnox_executive_switcher_active');
+              setSwitcherActive(false);
+              logout();
+            }}
             title="Sign out of Bitnox VMS"
             style={{ padding: '0.4rem 0.75rem' }}
           >

@@ -46,6 +46,11 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     setError(null);
     setLoading(true);
     try {
+      if (roleKey !== 'Admin') {
+        sessionStorage.removeItem('bitnox_executive_switcher_active');
+      } else {
+        sessionStorage.setItem('bitnox_executive_switcher_active', 'true');
+      }
       const loggedUser = await quickLogin(roleKey);
       onSuccess(loggedUser.role);
     } catch (err: any) {

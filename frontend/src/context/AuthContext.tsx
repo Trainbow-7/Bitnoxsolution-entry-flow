@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { api } from '../api/client';
 
@@ -88,6 +88,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<User> => {
     sessionStorage.removeItem('bitnox_explicit_logout');
     const res = await api.auth.login(email, password);
+    if (res.user?.role !== 'Admin') {
+      sessionStorage.removeItem('bitnox_executive_switcher_active');
+    } else {
+      sessionStorage.setItem('bitnox_executive_switcher_active', 'true');
+    }
     localStorage.setItem('bitnox_token', res.token);
     setToken(res.token);
     setUser(res.user as User);
@@ -125,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     sessionStorage.setItem('bitnox_explicit_logout', 'true');
+    sessionStorage.removeItem('bitnox_executive_switcher_active');
     localStorage.removeItem('bitnox_token');
     setToken(null);
     setUser(null);

@@ -175,6 +175,8 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     if (!role) return;
 
+    setAccessDeniedMessage(null);
+
     const requestedTab = normalizeTabFromUrl();
     if (requestedTab) {
       navigateTab(requestedTab, true);
