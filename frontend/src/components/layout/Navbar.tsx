@@ -41,8 +41,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
     await quickLogin(target);
   };
 
-  // Only appear on the admin dashboard, completely hidden from other roles/departments
-  const showRoleSwitcher = true;
+  // Only appear on the admin/ceo dashboard, completely removed from every other staff dashboard
+  const showRoleSwitcher = Boolean(isAdmin && (!currentTab || currentTab === 'dashboard'));
 
   return (
     <header className="topbar">
