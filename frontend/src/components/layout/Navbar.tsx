@@ -10,6 +10,7 @@ import {
   UserCheck,
   Shield,
   Briefcase,
+  ArrowCounterClockwise,
 } from '@phosphor-icons/react';
 
 interface NavbarProps {
@@ -184,46 +185,47 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                   position: 'absolute',
                   right: 0,
                   top: '110%',
-                  width: '280px',
+                  width: '340px',
                   background: 'var(--bg-surface-elevated)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   boxShadow: 'var(--shadow-xl)',
-                  padding: '0.6rem',
+                  padding: '0.65rem',
                   zIndex: 100,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.35rem',
+                  gap: '0.4rem',
                 }}
               >
                 <div
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.68rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
                     color: 'var(--text-muted)',
-                    padding: '0.3rem 0.5rem',
+                    padding: '0.2rem 0.5rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                   }}
                 >
-                  <span>Instant Role Switcher</span>
+                  <span>Fast Role Switcher</span>
                   {!isAdmin && (
                     <span style={{ color: '#f87171', fontSize: '0.65rem' }}>Active Session</span>
                   )}
                 </div>
                 <button
                   className="btn btn-secondary btn-sm"
-                  style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
+                  style={{ justifyContent: 'flex-start', gap: '0.6rem', width: '100%' }}
                   onClick={() => handleRoleSwitch('Receptionist')}
                 >
                   <img
                     src="/receptionist.jpg"
                     alt="Receptionist Kikelomo"
                     style={{
-                      width: 18,
-                      height: 18,
+                      width: 20,
+                      height: 20,
                       borderRadius: '50%',
                       objectFit: 'cover',
                       border: '1px solid var(--bitnox-cyan)',
@@ -234,15 +236,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                 </button>
                 <button
                   className="btn btn-secondary btn-sm"
-                  style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
+                  style={{ justifyContent: 'flex-start', gap: '0.6rem', width: '100%' }}
                   onClick={() => handleRoleSwitch('Staff-Ben')}
                 >
                   <img
                     src="/mr_ben_sam.jpg"
                     alt="Mr. Ben Sam"
                     style={{
-                      width: 18,
-                      height: 18,
+                      width: 20,
+                      height: 20,
                       borderRadius: '50%',
                       objectFit: 'cover',
                       border: '1px solid var(--bitnox-cyan)',
@@ -253,7 +255,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                 </button>
                 <button
                   className="btn btn-secondary btn-sm"
-                  style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
+                  style={{ justifyContent: 'flex-start', gap: '0.6rem', width: '100%' }}
                   onClick={() => handleRoleSwitch('Staff-Usman')}
                 >
                   <Briefcase size={16} color="var(--bitnox-cyan)" weight="duotone" />
@@ -261,37 +263,117 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, currentTab }) =
                 </button>
                 <button
                   className="btn btn-secondary btn-sm"
-                  style={{ justifyContent: 'flex-start', gap: '0.6rem' }}
+                  style={{ justifyContent: 'flex-start', gap: '0.6rem', width: '100%' }}
                   onClick={() => handleRoleSwitch('Staff-Elena')}
                 >
                   <Briefcase size={16} color="#2dd4bf" weight="duotone" />
                   <span>Staff: Elena (Dry Cleaning)</span>
                 </button>
-                <button
-                  className="btn btn-secondary btn-sm"
+
+                <div
                   style={{
-                    justifyContent: 'flex-start',
-                    gap: '0.6rem',
-                    background: !isAdmin ? 'rgba(239, 68, 68, 0.15)' : undefined,
-                    border: !isAdmin ? '1px solid rgba(239, 68, 68, 0.4)' : undefined,
+                    height: '1px',
+                    background: 'var(--border-subtle)',
+                    margin: '0.25rem 0',
                   }}
+                />
+
+                <button
+                  type="button"
                   onClick={() => handleRoleSwitch('Admin')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: !isAdmin ? 'rgba(239, 68, 68, 0.12)' : 'var(--bg-surface-elevated)',
+                    border: !isAdmin ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid var(--border-subtle)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left',
+                    color: 'var(--text-primary)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = !isAdmin
+                      ? 'rgba(239, 68, 68, 0.2)'
+                      : 'var(--bg-surface-hover)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = !isAdmin
+                      ? 'rgba(239, 68, 68, 0.12)'
+                      : 'var(--bg-surface-elevated)';
+                  }}
                 >
-                  <img
-                    src="/engr_oluwafemi.jpg"
-                    alt="Engr Oluwafemi Faleye"
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '1px solid #f87171',
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span style={{ fontWeight: !isAdmin ? 700 : 500, color: !isAdmin ? '#fca5a5' : undefined }}>
-                    Admin / CEO (Engr Oluwafemi) {!isAdmin ? '← Return' : ''}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <img
+                      src="/engr_oluwafemi.jpg"
+                      alt="Engr Oluwafemi Faleye"
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1.5px solid #f87171',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.825rem',
+                          color: !isAdmin ? '#fca5a5' : 'var(--text-primary)',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        Engr Oluwafemi Faleye
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          color: 'var(--text-muted)',
+                          lineHeight: 1.2,
+                          marginTop: '2px',
+                        }}
+                      >
+                        Admin / CEO
+                      </span>
+                    </div>
+                  </div>
+
+                  {!isAdmin ? (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        background: 'rgba(239, 68, 68, 0.25)',
+                        color: '#fecaca',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        padding: '0.25rem 0.55rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(239, 68, 68, 0.45)',
+                        flexShrink: 0,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      <ArrowCounterClockwise size={12} weight="bold" />
+                      <span>Return</span>
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: '0.68rem',
+                        color: 'var(--text-muted)',
+                        padding: '0.15rem 0.4rem',
+                      }}
+                    >
+                      Active
+                    </span>
+                  )}
                 </button>
               </div>
             )}
